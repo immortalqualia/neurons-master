@@ -1,111 +1,59 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Neural Network Simulator</title>
+  <title>Signal Graph</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
-    canvas {
-      display: block;
-    }
+    html, body { margin: 0; padding: 0; overflow: hidden; }
+    canvas { display: block; }
+
     #panel {
       position: fixed;
       top: 8px;
       left: 8px;
-      z-index: 10000;
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 12px;
+      z-index: 9999;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid #ddd;
+      padding: 8px;
       width: 320px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       font-size: 12px;
       user-select: none;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    #panel .row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 8px;
-      flex-wrap: wrap;
-    }
-    #panel button {
-      padding: 6px 12px;
-      cursor: pointer;
-      border: 1px solid #ccc;
-      background: #f5f5f5;
-      border-radius: 3px;
-      font-size: 11px;
-    }
-    #panel button:hover {
-      background: #e8e8e8;
-    }
-    #panel label {
-      display: inline-flex;
-      gap: 6px;
-      align-items: center;
-      font-size: 11px;
-    }
-    #panel input[type="number"] {
-      width: 80px;
-      padding: 3px 6px;
-      border: 1px solid #ccc;
-      border-radius: 2px;
-      font-size: 11px;
-    }
-    #panel .muted {
-      color: #666;
-      font-size: 10px;
-    }
-    #panel .sectionTitle {
-      font-weight: 600;
-      margin: 12px 0 8px;
-      font-size: 12px;
-      color: #333;
-    }
-    #panel .hr {
-      height: 1px;
-      background: #ddd;
-      margin: 12px 0;
-    }
-    #panel .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 10px;
-    }
+    #panel .row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    #panel button { padding: 4px 8px; }
+    #panel label { display: inline-flex; gap: 6px; align-items: center; }
+    #panel input[type="number"] { width: 90px; }
+    #panel .muted { color: #666; }
+    #panel .sectionTitle { font-weight: 600; margin: 8px 0 6px; }
+    #panel .hr { height: 1px; background: #e6e6e6; margin: 8px 0; }
+    #panel .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
   </style>
 </head>
 <body>
 
 <div id="panel">
   <div class="row">
-    <button id="btnSave">Save</button>
-    <button id="btnLoad">Load</button>
-    <button id="btnReset">Reset</button>
-    <button id="btnClear">Clear</button>
+    <button id="btnSave" type="button">Save</button>
+    <button id="btnLoad" type="button">Load</button>
+    <button id="btnReset" type="button">Reset</button>
+    <button id="btnClear" type="button">Clear signals</button>
   </div>
 
   <div class="hr"></div>
 
-  <div class="sectionTitle">Node Settings</div>
+  <div class="sectionTitle">Node settings</div>
   <div class="row">
-    <label>
-      Output:
+    <label>output
       <input id="inpOutput" type="number" step="0.1" value="1" />
     </label>
-    <label>
-      Threshold:
-      <input id="inpThreshold" type="number" step="0.1" min="0.001" value="1" />
+    <label>threshold
+      <input id="inpThreshold" type="number" step="0.1" value="1" />
     </label>
   </div>
   <div class="row">
-    <label>
-      Frequency:
+    <label>frequency
       <input id="inpFreq" type="number" step="1" min="0" value="0" />
     </label>
     <span class="muted">(Hz, 0 = mute)</span>
@@ -119,50 +67,34 @@
   <div class="hr"></div>
 
   <div class="sectionTitle">Controls</div>
-  <div class="muted" style="line-height: 1.5;">
-    • <b>Click empty</b>: create node<br/>
-    • <b>Click node</b>: add charge + drag<br/>
-    • <b>Shift+Click node</b>, drag to another: create connection<br/>
-    • <b>Hover + Delete</b>: delete node<br/>
-    • <b>Clear</b>: reset all charges
+  <div class="muted" style="line-height: 1.35;">
+    • <b>Click empty</b>: place node with settings above<br/>
+    • <b>Click node</b>: activate + drag<br/>
+    • <b>Shift + click node</b>, then release on another node: create/increase edge<br/>
+    • <b>Hover node + Delete</b>: delete node<br/>
+    • <b>Clear signals</b>: reset activity everywhere
   </div>
 </div>
 
 <script>
-// ========== Constants ==========
-const NODE_RADIUS = 12;
-const SIGNAL_DELAY_MS = 3000;
-const MAX_FIRES_PER_STEP = 100;
-const FIRE_FLASH_DURATION_MS = 500;
+/* ---------- constants ---------- */
+const NODE_RADIUS = 10;
+const ACTIVATION_DURATION = 500; // ms
+const SIGNAL_DELAY = 300;        // ms
 
-// Visual constants
-const HUE_POSITIVE = 0;    // Red
-const HUE_NEGATIVE = 220;  // Blue
-const SATURATION = 85;
-const BRIGHTNESS_MIN = 40;
-const BRIGHTNESS_MAX = 95;
+// colors (HSB): saturation constant, brightness changes
+const SAT = 85;
 
-// ========== Utility Functions ==========
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
+// made inactive brighter
+const BRIGHT_INACTIVE = 45;
+const BRIGHT_ACTIVE = 85;
 
-function parseNumber(value, defaultValue = 0) {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : defaultValue;
-}
+// sign hues
+const HUE_POS = 0;    // red
+const HUE_NEG = 220;  // blue
 
-function ensurePositive(value, min = 0.001) {
-  return Math.max(min, Math.abs(parseNumber(value, min)));
-}
-
-function isInputFocused() {
-  const el = document.activeElement;
-  return el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT");
-}
-
-function downloadJSON(filename, data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: "application/json;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -173,116 +105,98 @@ function downloadJSON(filename, data) {
   URL.revokeObjectURL(url);
 }
 
-// ========== Node Class ==========
+function clampNumber(v, def = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : def;
+}
+
+function isEditingInput() {
+  const el = document.activeElement;
+  return el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT");
+}
+
+/* ---------- model ---------- */
 class Node {
-  constructor(id, x, y, config = {}) {
+  constructor(id, x, y, { output = 1, frequency = 0, threshold = 1 } = {}) {
     this.id = id;
     this.x = x;
     this.y = y;
-    
-    this.output = parseNumber(config.output, 1);
-    this.threshold = ensurePositive(config.threshold, 1);
-    this.frequency = Math.max(0, parseNumber(config.frequency, 0));
-    
-    this.charge = 0;
-    this.fireFlashEndTime = 0; // milliseconds
+    this.output = output;         // can be negative
+    this.frequency = Math.max(0, frequency);
+    this.threshold = threshold;   // numeric
+    this.activeUntil = 0;         // millis timestamp
   }
 
-  contains(x, y) {
-    const dx = x - this.x;
-    const dy = y - this.y;
-    return Math.sqrt(dx * dx + dy * dy) <= NODE_RADIUS;
+  isActive(now) {
+    return now < this.activeUntil;
   }
 
-  triggerFireFlash(currentTime) {
-    this.fireFlashEndTime = currentTime + FIRE_FLASH_DURATION_MS;
+  activate(now, { force = false } = {}) {
+    if (!force && this.isActive(now)) return false;
+    this.activeUntil = now + ACTIVATION_DURATION;
+    return true;
   }
 
-  getFireFlashIntensity(currentTime) {
-    if (currentTime >= this.fireFlashEndTime) return 0;
-    const remaining = this.fireFlashEndTime - currentTime;
-    return clamp(remaining / FIRE_FLASH_DURATION_MS, 0, 1);
-  }
-
-  getChargeProgress() {
-    return clamp(this.charge / this.threshold, 0, 1);
+  contains(mx, my) {
+    return dist(mx, my, this.x, this.y) <= NODE_RADIUS;
   }
 }
 
-// ========== Edge Class ==========
 class Edge {
-  constructor(id, fromNodeId, toNodeId, weight = 1) {
+  constructor(id, fromId, toId, weight = 1) {
     this.id = id;
-    this.fromNodeId = fromNodeId;
-    this.toNodeId = toNodeId;
-    this.weight = parseNumber(weight, 1);
+    this.fromId = fromId;
+    this.toId = toId;
+    this.weight = weight;
   }
 }
 
-// ========== Graph Class ==========
+/* ---------- graph ---------- */
 class Graph {
   constructor() {
     this.nodes = new Map();
     this.edges = new Map();
-    this.nodeIds = [];
-    this.edgeIds = [];
-    
-    // Indexes for fast lookup
-    this.outgoingEdges = new Map(); // nodeId -> Set of edgeIds
-    this.incomingEdges = new Map(); // nodeId -> Set of edgeIds
-    this.edgeByPair = new Map();    // "fromId->toId" -> edgeId
-    
-    // State
+    this.nodeOrder = [];
+    this.edgeOrder = [];
+
+    this.outEdges = new Map();
+    this.inEdges  = new Map();
+    this.edgeByPair = new Map();
+
     this.nextNodeId = 1;
     this.nextEdgeId = 1;
-    this.hoveredNodeId = null;
+
+    this.selectedFromNodeId = null;
     this.draggingNodeId = null;
-    this.connectingFromNodeId = null;
-    
-    // Audio
-    this.audioContext = null;
-    
-    // Canvas
-    this.canvasElement = null;
+    this.hoveredNodeId = null;
+
+    this.audioCtx = null;
+    this.canvas = null;
     this.fileInput = null;
   }
 
-  initialize() {
-    // Create canvas
-    const canvas = createCanvas(windowWidth, windowHeight);
-    this.canvasElement = canvas.elt;
-    this.canvasElement.style.touchAction = "none";
-    this.canvasElement.addEventListener("contextmenu", e => e.preventDefault());
-    
+  setup() {
+    this.canvas = createCanvas(windowWidth, windowHeight);
+    this.canvas.elt.addEventListener("contextmenu", e => e.preventDefault());
+
     colorMode(HSB, 360, 100, 100, 1);
-    
-    // Pointer events
-    this.canvasElement.addEventListener("pointerdown", (e) => this.handlePointerDown(e));
-    this.canvasElement.addEventListener("pointermove", (e) => this.handlePointerMove(e));
-    this.canvasElement.addEventListener("pointerup", (e) => this.handlePointerUp(e));
-    this.canvasElement.addEventListener("pointercancel", (e) => this.handlePointerUp(e));
-    this.canvasElement.addEventListener("pointerleave", () => {
-      this.hoveredNodeId = null;
-    });
-    
-    // File input
+
     this.fileInput = document.createElement("input");
     this.fileInput.type = "file";
     this.fileInput.accept = "application/json";
     this.fileInput.style.display = "none";
     document.body.appendChild(this.fileInput);
-    
+
     this.fileInput.addEventListener("change", async () => {
-      const file = this.fileInput.files?.[0];
+      const file = this.fileInput.files && this.fileInput.files[0];
       this.fileInput.value = "";
       if (!file) return;
-      
       try {
         const text = await file.text();
         const data = JSON.parse(text);
-        this.loadFromData(data);
-      } catch (error) {
-        alert("Ошибка загрузки: " + (error.message || String(error)));
+        this.deserialize(data);
+      } catch (e) {
+        alert("Failed to load JSON: " + (e && e.message ? e.message : String(e)));
       }
     });
   }
@@ -291,473 +205,442 @@ class Graph {
     resizeCanvas(windowWidth, windowHeight);
   }
 
-  // ========== Audio ==========
   ensureAudio() {
-    if (this.audioContext) return;
+    if (this.audioCtx) return;
     try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      this.audioContext = new AudioCtx();
-      if (this.audioContext.state === "suspended") {
-        this.audioContext.resume();
-      }
-    } catch (error) {
-      console.warn("Audio not available:", error);
-      this.audioContext = null;
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      this.audioCtx = new Ctx();
+      if (this.audioCtx.state === "suspended") this.audioCtx.resume();
+    } catch (_) {
+      this.audioCtx = null;
     }
   }
 
-  playTone(frequency) {
-    if (!this.audioContext || !frequency || frequency <= 0) return;
-    
-    const ctx = this.audioContext;
-    const now = ctx.currentTime;
-    const duration = 0.1;
-    
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(frequency, now);
-    
-    gainNode.gain.setValueAtTime(0.001, now);
-    gainNode.gain.exponentialRampToValueAtTime(0.15, now + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    oscillator.start(now);
-    oscillator.stop(now + duration + 0.01);
+  playTone(freqHz) {
+    if (!this.audioCtx || !freqHz || freqHz <= 0) return;
+
+    const ctx = this.audioCtx;
+    const t0 = ctx.currentTime;
+    const dur = ACTIVATION_DURATION / 1000;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freqHz, t0);
+
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
   }
 
-  // ========== Node Operations ==========
-  addNode(x, y, config = {}) {
-    const id = this.nextNodeId++;
-    const node = new Node(id, x, y, config);
-    
-    this.nodes.set(id, node);
-    this.nodeIds.push(id);
-    this.outgoingEdges.set(id, new Set());
-    this.incomingEdges.set(id, new Set());
-    
-    return node;
-  }
-
-  deleteNode(nodeId) {
-    if (!this.nodes.has(nodeId)) return;
-    
-    // Remove all connected edges
-    const outEdges = this.outgoingEdges.get(nodeId) || new Set();
-    const inEdges = this.incomingEdges.get(nodeId) || new Set();
-    const allEdges = new Set([...outEdges, ...inEdges]);
-    
-    for (const edgeId of allEdges) {
-      this.deleteEdge(edgeId);
-    }
-    
-    // Remove node
-    this.nodes.delete(nodeId);
-    this.nodeIds = this.nodeIds.filter(id => id !== nodeId);
-    this.outgoingEdges.delete(nodeId);
-    this.incomingEdges.delete(nodeId);
-    
-    // Clear state
-    if (this.hoveredNodeId === nodeId) this.hoveredNodeId = null;
-    if (this.draggingNodeId === nodeId) this.draggingNodeId = null;
-    if (this.connectingFromNodeId === nodeId) this.connectingFromNodeId = null;
-  }
-
-  // ========== Edge Operations ==========
-  addOrUpdateEdge(fromNodeId, toNodeId, weightDelta = 1) {
-    if (fromNodeId === toNodeId) return;
-    if (!this.nodes.has(fromNodeId) || !this.nodes.has(toNodeId)) return;
-    
-    const key = `${fromNodeId}->${toNodeId}`;
-    const existingEdgeId = this.edgeByPair.get(key);
-    
-    if (existingEdgeId) {
-      // Update existing edge
-      const edge = this.edges.get(existingEdgeId);
-      if (edge) {
-        edge.weight = Math.max(0.1, edge.weight + weightDelta);
-      }
-      return;
-    }
-    
-    // Create new edge
-    const id = this.nextEdgeId++;
-    const edge = new Edge(id, fromNodeId, toNodeId, weightDelta);
-    
-    this.edges.set(id, edge);
-    this.edgeIds.push(id);
-    this.edgeByPair.set(key, id);
-    
-    this.outgoingEdges.get(fromNodeId).add(id);
-    this.incomingEdges.get(toNodeId).add(id);
-  }
-
-  deleteEdge(edgeId) {
-    const edge = this.edges.get(edgeId);
-    if (!edge) return;
-    
-    const key = `${edge.fromNodeId}->${edge.toNodeId}`;
-    
-    this.outgoingEdges.get(edge.fromNodeId)?.delete(edgeId);
-    this.incomingEdges.get(edge.toNodeId)?.delete(edgeId);
-    this.edgeByPair.delete(key);
-    
-    this.edges.delete(edgeId);
-    this.edgeIds = this.edgeIds.filter(id => id !== edgeId);
-  }
-
-  // ========== Signal Processing ==========
-  addCharge(nodeId, amount) {
-    const node = this.nodes.get(nodeId);
-    if (!node) return;
-    
-    node.charge += amount;
-    
-    // Process firing
-    let fireCount = 0;
-    while (node.charge >= node.threshold && fireCount < MAX_FIRES_PER_STEP) {
-      node.charge -= node.threshold;
-      fireCount++;
-      
-      const currentTime = millis();
-      node.triggerFireFlash(currentTime);
-      this.playTone(node.frequency);
-      
-      const signalValue = Math.sign(node.output);
-      if (signalValue === 0) continue;
-      
-      // Send signal to connected nodes
-      const outgoing = this.outgoingEdges.get(nodeId);
-      if (!outgoing || outgoing.size === 0) continue;
-      
-      for (const edgeId of outgoing) {
-        const edge = this.edges.get(edgeId);
-        if (!edge) continue;
-        
-        const signalAmount = edge.weight * signalValue;
-        setTimeout(() => {
-          this.addCharge(edge.toNodeId, signalAmount);
-        }, SIGNAL_DELAY_MS);
-      }
-    }
-  }
-
-  clearAllCharges() {
-    const now = millis();
-    for (const nodeId of this.nodeIds) {
-      const node = this.nodes.get(nodeId);
-      if (node) {
-        node.charge = 0;
-        node.fireFlashEndTime = 0;
-      }
+  clearSignals() {
+    for (const id of this.nodeOrder) {
+      const n = this.nodes.get(id);
+      if (n) n.activeUntil = 0;
     }
   }
 
   clearAll() {
     this.nodes.clear();
     this.edges.clear();
-    this.nodeIds = [];
-    this.edgeIds = [];
-    this.outgoingEdges.clear();
-    this.incomingEdges.clear();
+    this.nodeOrder = [];
+    this.edgeOrder = [];
+    this.outEdges.clear();
+    this.inEdges.clear();
     this.edgeByPair.clear();
     this.nextNodeId = 1;
     this.nextEdgeId = 1;
-    this.hoveredNodeId = null;
+    this.selectedFromNodeId = null;
     this.draggingNodeId = null;
-    this.connectingFromNodeId = null;
+    this.hoveredNodeId = null;
   }
 
-  // ========== Serialization ==========
   saveToFile() {
-    const data = {
-      version: 1,
-      nodes: this.nodeIds.map(id => {
-        const n = this.nodes.get(id);
-        return {
-          id: n.id,
-          x: n.x,
-          y: n.y,
-          output: n.output,
-          threshold: n.threshold,
-          frequency: n.frequency,
-          charge: n.charge
-        };
-      }),
-      edges: this.edgeIds.map(id => {
-        const e = this.edges.get(id);
-        return {
-          id: e.id,
-          fromId: e.fromNodeId,
-          toId: e.toNodeId,
-          weight: e.weight
-        };
-      })
-    };
-    
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    downloadJSON(`neural-network-${timestamp}.json`, data);
+    const payload = JSON.stringify(this.serialize(), null, 2);
+    const ts = new Date().toISOString().replace(/[:.]/g, "-");
+    downloadText(`graph-${ts}.json`, payload);
   }
 
-  loadFromData(data) {
+  requestLoadFromFile() {
+    if (this.fileInput) this.fileInput.click();
+  }
+
+  serialize() {
+    return {
+      version: 1,
+      nodes: this.nodeOrder
+        .map(id => this.nodes.get(id))
+        .filter(Boolean)
+        .map(n => ({
+          id: n.id,
+          x: n.x, y: n.y,
+          output: n.output,
+          frequency: n.frequency,
+          threshold: n.threshold
+        })),
+      edges: this.edgeOrder
+        .map(id => this.edges.get(id))
+        .filter(Boolean)
+        .map(e => ({
+          id: e.id,
+          fromId: e.fromId,
+          toId: e.toId,
+          weight: e.weight
+        }))
+    };
+  }
+
+  deserialize(data) {
     this.clearAll();
-    
-    if (!data || typeof data !== "object") return;
-    
-    // Load nodes
-    const nodesData = Array.isArray(data.nodes) ? data.nodes : [];
+
     let maxNodeId = 0;
-    
-    for (const nodeData of nodesData) {
-      const id = Math.max(1, Math.floor(parseNumber(nodeData.id, 0)));
-      const x = parseNumber(nodeData.x, 0);
-      const y = parseNumber(nodeData.y, 0);
-      
-      const node = new Node(id, x, y, {
-        output: parseNumber(nodeData.output, 1),
-        threshold: ensurePositive(nodeData.threshold, 1),
-        frequency: Math.max(0, parseNumber(nodeData.frequency, 0))
-      });
-      
-      node.charge = Math.max(0, parseNumber(nodeData.charge, 0));
-      
-      this.nodes.set(id, node);
-      this.nodeIds.push(id);
-      this.outgoingEdges.set(id, new Set());
-      this.incomingEdges.set(id, new Set());
-      
-      maxNodeId = Math.max(maxNodeId, id);
-    }
-    
-    this.nextNodeId = maxNodeId + 1;
-    
-    // Load edges
-    const edgesData = Array.isArray(data.edges) ? data.edges : [];
     let maxEdgeId = 0;
-    
-    for (const edgeData of edgesData) {
-      const id = Math.max(1, Math.floor(parseNumber(edgeData.id, 0)));
-      const fromId = Math.max(1, Math.floor(parseNumber(edgeData.fromId, 0)));
-      const toId = Math.max(1, Math.floor(parseNumber(edgeData.toId, 0)));
-      const weight = ensurePositive(edgeData.weight, 1);
-      
-      if (!this.nodes.has(fromId) || !this.nodes.has(toId) || fromId === toId) {
-        continue;
-      }
-      
+
+    const nodesArr = Array.isArray(data && data.nodes) ? data.nodes : [];
+    for (const nd of nodesArr) {
+      const id = Math.max(1, Math.floor(clampNumber(nd.id, 0)));
+      const x = clampNumber(nd.x, 0);
+      const y = clampNumber(nd.y, 0);
+
+      const n = new Node(id, x, y, {
+        output: clampNumber(nd.output, 1),
+        frequency: Math.max(0, clampNumber(nd.frequency, 0)),
+        threshold: clampNumber(nd.threshold, 1)
+      });
+
+      this.nodes.set(id, n);
+      this.nodeOrder.push(id);
+      this.outEdges.set(id, new Set());
+      this.inEdges.set(id, new Set());
+
+      if (id > maxNodeId) maxNodeId = id;
+    }
+
+    const edgesArr = Array.isArray(data && data.edges) ? data.edges : [];
+    for (const ed of edgesArr) {
+      const id = Math.max(1, Math.floor(clampNumber(ed.id, 0)));
+      const fromId = Math.max(1, Math.floor(clampNumber(ed.fromId, 0)));
+      const toId = Math.max(1, Math.floor(clampNumber(ed.toId, 0)));
+      const weight = clampNumber(ed.weight, 1);
+
+      if (!this.nodes.has(fromId) || !this.nodes.has(toId) || fromId === toId) continue;
+
       const key = `${fromId}->${toId}`;
       if (this.edgeByPair.has(key)) {
-        // Merge weights if edge already exists
         const existingId = this.edgeByPair.get(key);
-        const existing = this.edges.get(existingId);
-        if (existing) {
-          existing.weight += weight;
-        }
+        const ex = this.edges.get(existingId);
+        if (ex) ex.weight += weight;
         continue;
       }
-      
-      const edge = new Edge(id, fromId, toId, weight);
-      this.edges.set(id, edge);
-      this.edgeIds.push(id);
+
+      const e = new Edge(id, fromId, toId, weight);
+      this.edges.set(id, e);
+      this.edgeOrder.push(id);
       this.edgeByPair.set(key, id);
-      
-      this.outgoingEdges.get(fromId).add(id);
-      this.incomingEdges.get(toId).add(id);
-      
-      maxEdgeId = Math.max(maxEdgeId, id);
+
+      this.outEdges.get(fromId).add(id);
+      this.inEdges.get(toId).add(id);
+
+      if (id > maxEdgeId) maxEdgeId = id;
     }
-    
+
+    this.nextNodeId = maxNodeId + 1;
     this.nextEdgeId = maxEdgeId + 1;
   }
 
-  requestLoadFile() {
-    if (this.fileInput) {
-      this.fileInput.click();
-    }
-  }
-
-  // ========== Input Handling ==========
-  getCanvasCoordinates(event) {
-    const rect = this.canvasElement.getBoundingClientRect();
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    };
-  }
-
-  getNodeAt(x, y) {
-    // Check from top to bottom (last drawn = top)
-    for (let i = this.nodeIds.length - 1; i >= 0; i--) {
-      const nodeId = this.nodeIds[i];
-      const node = this.nodes.get(nodeId);
-      if (node && node.contains(x, y)) {
-        return node;
-      }
+  getNodeAt(mx, my) {
+    for (let i = this.nodeOrder.length - 1; i >= 0; i--) {
+      const id = this.nodeOrder[i];
+      const n = this.nodes.get(id);
+      if (n && n.contains(mx, my)) return n;
     }
     return null;
   }
 
-  handlePointerDown(event) {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
-    
-    this.ensureAudio();
-    this.canvasElement.setPointerCapture(event.pointerId);
-    
-    const { x, y } = this.getCanvasCoordinates(event);
-    const node = this.getNodeAt(x, y);
-    
-    this.hoveredNodeId = node ? node.id : null;
-    
-    if (node) {
-      if (event.shiftKey) {
-        // Start connection
-        this.connectingFromNodeId = node.id;
-        this.draggingNodeId = null;
-      } else {
-        // Add charge and start drag
-        this.addCharge(node.id, 1);
-        this.draggingNodeId = node.id;
-        this.connectingFromNodeId = null;
-      }
-    } else {
-      // Create new node
-      const config = readPanelConfig();
-      this.addNode(x, y, config);
+  deleteNode(nodeId) {
+    if (!this.nodes.has(nodeId)) return;
+
+    const out = this.outEdges.get(nodeId) || new Set();
+    const inn = this.inEdges.get(nodeId) || new Set();
+    const toRemove = new Set([...out, ...inn]);
+    for (const edgeId of toRemove) this.deleteEdge(edgeId);
+
+    this.nodes.delete(nodeId);
+    this.nodeOrder = this.nodeOrder.filter(id => id !== nodeId);
+    this.outEdges.delete(nodeId);
+    this.inEdges.delete(nodeId);
+
+    if (this.selectedFromNodeId === nodeId) this.selectedFromNodeId = null;
+    if (this.draggingNodeId === nodeId) this.draggingNodeId = null;
+    if (this.hoveredNodeId === nodeId) this.hoveredNodeId = null;
+  }
+
+  deleteEdge(edgeId) {
+    const e = this.edges.get(edgeId);
+    if (!e) return;
+
+    const out = this.outEdges.get(e.fromId);
+    if (out) out.delete(edgeId);
+    const inn = this.inEdges.get(e.toId);
+    if (inn) inn.delete(edgeId);
+
+    this.edgeByPair.delete(`${e.fromId}->${e.toId}`);
+
+    this.edges.delete(edgeId);
+    this.edgeOrder = this.edgeOrder.filter(id => id !== edgeId);
+  }
+
+  addNode(x, y, cfg) {
+    const id = this.nextNodeId++;
+    const n = new Node(id, x, y, cfg);
+
+    this.nodes.set(id, n);
+    this.nodeOrder.push(id);
+    this.outEdges.set(id, new Set());
+    this.inEdges.set(id, new Set());
+    return n;
+  }
+
+  addOrIncreaseEdge(fromId, toId) {
+    if (fromId === toId) return;
+    if (!this.nodes.has(fromId) || !this.nodes.has(toId)) return;
+
+    const key = `${fromId}->${toId}`;
+    const existingId = this.edgeByPair.get(key);
+    if (existingId) {
+      const e = this.edges.get(existingId);
+      if (e) e.weight += 1;
+      return;
+    }
+
+    const id = this.nextEdgeId++;
+    const e = new Edge(id, fromId, toId, 1);
+    this.edges.set(id, e);
+    this.edgeOrder.push(id);
+    this.edgeByPair.set(key, id);
+
+    this.outEdges.get(fromId).add(id);
+    this.inEdges.get(toId).add(id);
+  }
+
+  totalActiveInput(targetNodeId, now) {
+    const incoming = this.inEdges.get(targetNodeId);
+    if (!incoming) return 0;
+
+    let sum = 0;
+    for (const edgeId of incoming) {
+      const e = this.edges.get(edgeId);
+      if (!e) continue;
+      const src = this.nodes.get(e.fromId);
+      if (src && src.isActive(now)) sum += e.weight * src.output;
+    }
+    return sum;
+  }
+
+  activateNode(nodeId, now, { force = false } = {}) {
+    const n = this.nodes.get(nodeId);
+    if (!n) return;
+
+    const didActivate = n.activate(now, { force });
+    if (!didActivate) return;
+
+    this.playTone(n.frequency);
+
+    const outgoing = this.outEdges.get(nodeId);
+    if (!outgoing) return;
+
+    for (const edgeId of outgoing) {
+      setTimeout(() => this.onSignalArrive(edgeId), SIGNAL_DELAY);
     }
   }
 
-  handlePointerMove(event) {
-    const { x, y } = this.getCanvasCoordinates(event);
-    const node = this.getNodeAt(x, y);
-    
-    this.hoveredNodeId = node ? node.id : null;
-    
-    // Handle dragging
-    if (this.draggingNodeId) {
-      const draggedNode = this.nodes.get(this.draggingNodeId);
-      if (draggedNode) {
-        draggedNode.x = clamp(x, NODE_RADIUS, width - NODE_RADIUS);
-        draggedNode.y = clamp(y, NODE_RADIUS, height - NODE_RADIUS);
-      }
+  onSignalArrive(edgeId) {
+    const now = millis();
+    const e = this.edges.get(edgeId);
+    if (!e) return;
+
+    const src = this.nodes.get(e.fromId);
+    const dst = this.nodes.get(e.toId);
+    if (!src || !dst) return;
+
+    if (!src.isActive(now)) return;
+
+    const input = this.totalActiveInput(dst.id, now);
+    if (input >= dst.threshold) {
+      this.activateNode(dst.id, now, { force: false });
     }
   }
 
-  handlePointerUp(event) {
-    if (this.canvasElement.hasPointerCapture(event.pointerId)) {
-      this.canvasElement.releasePointerCapture(event.pointerId);
-    }
-    
-    // Handle connection creation
-    if (this.connectingFromNodeId) {
-      const { x, y } = this.getCanvasCoordinates(event);
-      const targetNode = this.getNodeAt(x, y);
-      
-      if (targetNode && targetNode.id !== this.connectingFromNodeId) {
-        this.addOrUpdateEdge(this.connectingFromNodeId, targetNode.id, 1);
-      }
-      
-      this.connectingFromNodeId = null;
-    }
-    
-    this.draggingNodeId = null;
+  // color helpers
+  hueForOutput(out) {
+    if (out > 0) return HUE_POS;
+    if (out < 0) return HUE_NEG;
+    return 0;
   }
 
-  // ========== Rendering ==========
-  getNodeColor(node, currentTime) {
-    const chargeProgress = node.getChargeProgress();
-    const flashIntensity = node.getFireFlashIntensity(currentTime);
-    const glow = Math.max(chargeProgress, flashIntensity);
-    
-    const brightness = BRIGHTNESS_MIN + (BRIGHTNESS_MAX - BRIGHTNESS_MIN) * glow;
-    
-    if (node.output === 0) {
-      return color(0, 0, brightness);
+  nodeFill(node, now) {
+    const active = node.isActive(now);
+    const b = active ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
+
+    if (node.output === 0) return color(0, 0, b);
+    const h = this.hueForOutput(node.output);
+    return color(h, SAT, b);
+  }
+
+  nodeStroke(node, now) {
+    const active = node.isActive(now);
+    const b = active ? Math.max(10, BRIGHT_ACTIVE - 15) : Math.max(10, BRIGHT_INACTIVE - 10);
+
+    if (node.output === 0) return color(0, 0, b);
+    const h = this.hueForOutput(node.output);
+    return color(h, SAT, b);
+  }
+
+  edgeColorFromSource(srcNode, now) {
+    // exact same "on/off" as source node
+    const b = srcNode.isActive(now) ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
+
+    if (srcNode.output === 0) return color(0, 0, b);
+    const h = this.hueForOutput(srcNode.output);
+    return color(h, SAT, b);
+  }
+
+  // threshold -> border thickness (restored)
+  nodeBorderWidth(node) {
+    const t = Math.abs(Number(node.threshold)) || 0;
+    // scale moderately, clamp to avoid ridiculous thickness
+    return constrain(1 + t, 1, 12);
+  }
+
+  updateHover(mx, my) {
+    if (mx < 0 || mx > width || my < 0 || my > height) {
+      this.hoveredNodeId = null;
+      return;
     }
-    
-    const hue = node.output > 0 ? HUE_POSITIVE : HUE_NEGATIVE;
-    return color(hue, SATURATION, brightness);
+    const n = this.getNodeAt(mx, my);
+    this.hoveredNodeId = n ? n.id : null;
   }
 
-  getEdgeColor(fromNode, currentTime) {
-    return this.getNodeColor(fromNode, currentTime);
-  }
+  draw() {
+    const now = millis();
+    this.updateHover(mouseX, mouseY);
 
-  render() {
-    const currentTime = millis();
-    background(0, 0, 96);
-    
-    // Draw edges first
-    for (const edgeId of this.edgeIds) {
-      const edge = this.edges.get(edgeId);
-      if (!edge) continue;
-      
-      const fromNode = this.nodes.get(edge.fromNodeId);
-      const toNode = this.nodes.get(edge.toNodeId);
+    background(0, 0, 95);
+
+    // edges
+    for (const edgeId of this.edgeOrder) {
+      const e = this.edges.get(edgeId);
+      if (!e) continue;
+      const fromNode = this.nodes.get(e.fromId);
+      const toNode = this.nodes.get(e.toId);
       if (!fromNode || !toNode) continue;
-      
-      const edgeColor = this.getEdgeColor(fromNode, currentTime);
-      stroke(edgeColor);
-      strokeWeight(2.5);
+
+      const c = this.edgeColorFromSource(fromNode, now);
+      stroke(c);
+      strokeWeight(3); // thicker arrows
+
       line(fromNode.x, fromNode.y, toNode.x, toNode.y);
-      
-      // Draw arrow
+
       const dx = toNode.x - fromNode.x;
       const dy = toNode.y - fromNode.y;
-      const angle = atan2(dy, dx);
-      const arrowLength = 12;
-      const arrowWidth = 6;
-      
+      const a = atan2(dy, dx);
+
       push();
       translate(toNode.x, toNode.y);
-      rotate(angle);
-      stroke(edgeColor);
-      strokeWeight(2.5);
-      line(0, 0, -arrowLength, -arrowWidth);
-      line(0, 0, -arrowLength, arrowWidth);
+      rotate(a);
+      stroke(c);
+      strokeWeight(3);
+      line(0, 0, -14, -7);
+      line(0, 0, -14,  7);
       pop();
     }
-    
-    // Draw nodes
-    for (const nodeId of this.nodeIds) {
-      const node = this.nodes.get(nodeId);
-      if (!node) continue;
-      
-      const nodeColor = this.getNodeColor(node, currentTime);
-      fill(nodeColor);
-      
-      // Stroke color (darker)
-      const strokeBrightness = Math.max(20, brightness(nodeColor) - 15);
-      stroke(hue(nodeColor), saturation(nodeColor), strokeBrightness);
-      strokeWeight(2);
-      
-      circle(node.x, node.y, NODE_RADIUS * 2);
-      
-      // Hover indicator
-      if (this.hoveredNodeId === node.id) {
-        noFill();
-        stroke(0, 0, 30);
-        strokeWeight(1.5);
-        circle(node.x, node.y, NODE_RADIUS * 2 + 8);
-      }
-      
-      // Connection indicator
-      if (this.connectingFromNodeId === node.id) {
+
+    // nodes
+    for (const nodeId of this.nodeOrder) {
+      const n = this.nodes.get(nodeId);
+      if (!n) continue;
+
+      fill(this.nodeFill(n, now));
+      stroke(this.nodeStroke(n, now));
+      strokeWeight(this.nodeBorderWidth(n));
+      circle(n.x, n.y, NODE_RADIUS * 2);
+
+      if (this.hoveredNodeId === n.id) {
         noFill();
         stroke(0, 0, 20);
         strokeWeight(2);
-        circle(node.x, node.y, NODE_RADIUS * 2 + 12);
+        circle(n.x, n.y, NODE_RADIUS * 2 + 10);
+      }
+    }
+
+    if (this.selectedFromNodeId) {
+      const n = this.nodes.get(this.selectedFromNodeId);
+      if (n) {
+        noFill();
+        stroke(0, 0, 20);
+        strokeWeight(2);
+        circle(n.x, n.y, NODE_RADIUS * 2 + 16);
       }
     }
   }
+
+  mousePressed(mx, my) {
+    if (mx < 0 || mx > width || my < 0 || my > height) return;
+
+    this.ensureAudio();
+
+    const isLeft = (mouseButton === LEFT);
+    if (!isLeft) return;
+
+    const isShift = keyIsDown(SHIFT);
+    const n = this.getNodeAt(mx, my);
+
+    if (n) {
+      if (isShift) {
+        this.selectedFromNodeId = n.id;
+        this.draggingNodeId = null;
+        return;
+      }
+      this.draggingNodeId = n.id;
+      this.activateNode(n.id, millis(), { force: true });
+      return;
+    }
+
+    const cfg = readPanelConfig();
+    this.addNode(mx, my, cfg);
+  }
+
+  mouseDragged(mx, my) {
+    const id = this.draggingNodeId;
+    if (!id) return;
+
+    const n = this.nodes.get(id);
+    if (!n) return;
+
+    n.x = constrain(mx, 0, width);
+    n.y = constrain(my, 0, height);
+  }
+
+  mouseReleased(mx, my) {
+    if (this.selectedFromNodeId) {
+      const target = this.getNodeAt(mx, my);
+      if (target && target.id !== this.selectedFromNodeId) {
+        this.addOrIncreaseEdge(this.selectedFromNodeId, target.id);
+      }
+      this.selectedFromNodeId = null;
+    }
+    this.draggingNodeId = null;
+  }
 }
 
-// ========== UI Setup ==========
-const graph = new Graph();
-
+/* ---------- UI binding ---------- */
 const inpOutput = document.getElementById("inpOutput");
 const inpThreshold = document.getElementById("inpThreshold");
 const inpFreq = document.getElementById("inpFreq");
@@ -765,96 +648,89 @@ const hoverInfo = document.getElementById("hoverInfo");
 
 function readPanelConfig() {
   return {
-    output: parseNumber(inpOutput.value, 1),
-    threshold: ensurePositive(inpThreshold.value, 1),
-    frequency: Math.max(0, parseNumber(inpFreq.value, 0))
+    output: clampNumber(inpOutput.value, 1),
+    threshold: clampNumber(inpThreshold.value, 1),
+    frequency: Math.max(0, clampNumber(inpFreq.value, 0))
   };
 }
 
-function updateHoverInfo() {
-  const hoveredId = graph.hoveredNodeId;
-  if (!hoveredId) {
-    hoverInfo.textContent = "none";
-    return;
-  }
-  
-  const node = graph.nodes.get(hoveredId);
-  if (!node) {
-    hoverInfo.textContent = `node#${hoveredId}`;
-    return;
-  }
-  
-  const progress = node.getChargeProgress();
-  hoverInfo.textContent = `#${hoveredId} charge=${node.charge.toFixed(2)}/${node.threshold.toFixed(2)} (${(progress * 100).toFixed(0)}%)`;
-}
+/* ---------- p5 plumbing ---------- */
+const graph = new Graph();
 
-function applyPanelToHoveredNode() {
-  const hoveredId = graph.hoveredNodeId;
-  if (!hoveredId) return;
-  
-  const node = graph.nodes.get(hoveredId);
-  if (!node) return;
-  
-  const config = readPanelConfig();
-  node.output = config.output;
-  node.threshold = config.threshold;
-  node.frequency = config.frequency;
-}
-
-// ========== p5.js Setup ==========
 function setup() {
-  graph.initialize();
-  
-  // Button handlers
+  graph.setup();
+
   document.getElementById("btnSave").addEventListener("click", () => {
     graph.ensureAudio();
     graph.saveToFile();
   });
-  
+
   document.getElementById("btnLoad").addEventListener("click", () => {
     graph.ensureAudio();
-    graph.requestLoadFile();
+    graph.requestLoadFromFile();
   });
-  
+
   document.getElementById("btnReset").addEventListener("click", () => {
     graph.ensureAudio();
-    if (confirm("Сбросить весь граф? (удалить все ноды и связи)")) {
-      graph.clearAll();
-    }
+    if (confirm("Reset graph (delete all nodes/edges)?")) graph.clearAll();
   });
-  
+
   document.getElementById("btnClear").addEventListener("click", () => {
     graph.ensureAudio();
-    graph.clearAllCharges();
+    graph.clearSignals();
   });
-  
-  // Panel input handlers
+
+  // Panel edits apply to hovered node only (never overwrite panel values on hover)
+  const applyPanelToHoveredNode = () => {
+    const hid = graph.hoveredNodeId;
+    if (!hid) return;
+    const n = graph.nodes.get(hid);
+    if (!n) return;
+
+    const cfg = readPanelConfig();
+    n.output = cfg.output;
+    n.threshold = cfg.threshold;
+    n.frequency = cfg.frequency;
+  };
+
   inpOutput.addEventListener("input", applyPanelToHoveredNode);
   inpThreshold.addEventListener("input", applyPanelToHoveredNode);
   inpFreq.addEventListener("input", applyPanelToHoveredNode);
-  
-  // Keyboard handler
-  document.addEventListener("keydown", (event) => {
-    if (isInputFocused()) return;
-    
-    const key = event.key.toLowerCase();
+
+  // Delete hovered node
+  document.addEventListener("keydown", (e) => {
+    if (isEditingInput()) return;
+
+    const key = (e.key || "").toLowerCase();
     if (key !== "delete" && key !== "backspace") return;
-    
-    const hoveredId = graph.hoveredNodeId;
-    if (!hoveredId) return;
-    
-    event.preventDefault();
-    graph.deleteNode(hoveredId);
+
+    const hid = graph.hoveredNodeId;
+    if (!hid) return;
+
+    e.preventDefault();
+    graph.deleteNode(hid);
   });
 }
 
 function draw() {
-  graph.render();
-  updateHoverInfo();
+  graph.draw();
+  hoverInfo.textContent = graph.hoveredNodeId ? `node#${graph.hoveredNodeId}` : "none";
 }
 
-function windowResized() {
-  graph.resize();
+function windowResized() { graph.resize(); }
+
+// Ignore clicks not on canvas (panel)
+function mousePressed(event) {
+  if (!event || !graph.canvas || event.target !== graph.canvas.elt) return;
+  graph.mousePressed(mouseX, mouseY);
+}
+function mouseDragged(event) {
+  if (!event || !graph.canvas || event.target !== graph.canvas.elt) return;
+  graph.mouseDragged(mouseX, mouseY);
+}
+function mouseReleased(event) {
+  if (!event || !graph.canvas || event.target !== graph.canvas.elt) return;
+  graph.mouseReleased(mouseX, mouseY);
 }
 </script>
 </body>
