@@ -1,0 +1,409 @@
+{
+  "version": 2,
+  "nodes": [
+    {
+      "id": 1,
+      "x": 730.09,
+      "y": 421.43,
+      "output": -1.0,
+      "frequency": 330.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 2,
+      "x": 305.72,
+      "y": 130.01,
+      "output": 1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 3,
+      "x": 647.67,
+      "y": 527.5,
+      "output": 1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 4,
+      "x": 317.96,
+      "y": 218.17,
+      "output": -1.0,
+      "frequency": 110.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 5,
+      "x": 956.18,
+      "y": 415.94,
+      "output": -1.0,
+      "frequency": 440.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 6,
+      "x": 1110.65,
+      "y": 619.65,
+      "output": 1.0,
+      "frequency": 110.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 7,
+      "x": 1005.7,
+      "y": 381.95,
+      "output": -1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 8,
+      "x": 938.48,
+      "y": 770.03,
+      "output": -1.0,
+      "frequency": 660.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 9,
+      "x": 188.31,
+      "y": 24.57,
+      "output": 1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 10,
+      "x": 822.13,
+      "y": 619.95,
+      "output": -1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 11,
+      "x": 136.02,
+      "y": 574.01,
+      "output": 1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 12,
+      "x": 790.24,
+      "y": 365.9,
+      "output": 1.0,
+      "frequency": 660.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 13,
+      "x": 797.5,
+      "y": 288.37,
+      "output": 1.0,
+      "frequency": 330.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 14,
+      "x": 1111.32,
+      "y": 42.76,
+      "output": -1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 15,
+      "x": 462.02,
+      "y": 357.38,
+      "output": 1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 16,
+      "x": 138.45,
+      "y": 201.71,
+      "output": 1.0,
+      "frequency": 110.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 17,
+      "x": 881.8,
+      "y": 472.77,
+      "output": -1.0,
+      "frequency": 330.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 18,
+      "x": 56.71,
+      "y": 197.89,
+      "output": 1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 19,
+      "x": 378.11,
+      "y": 302.34,
+      "output": -1.0,
+      "frequency": 0.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    },
+    {
+      "id": 20,
+      "x": 1111.06,
+      "y": 369.12,
+      "output": -1.0,
+      "frequency": 330.0,
+      "threshold": 1.0,
+      "charge": 0.0
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "fromId": 1,
+      "toId": 7,
+      "weight": 2
+    },
+    {
+      "id": 2,
+      "fromId": 1,
+      "toId": 18,
+      "weight": 2
+    },
+    {
+      "id": 3,
+      "fromId": 2,
+      "toId": 1,
+      "weight": 2
+    },
+    {
+      "id": 4,
+      "fromId": 3,
+      "toId": 2,
+      "weight": 1
+    },
+    {
+      "id": 5,
+      "fromId": 3,
+      "toId": 20,
+      "weight": 1
+    },
+    {
+      "id": 6,
+      "fromId": 4,
+      "toId": 10,
+      "weight": 2
+    },
+    {
+      "id": 7,
+      "fromId": 5,
+      "toId": 9,
+      "weight": 2
+    },
+    {
+      "id": 8,
+      "fromId": 5,
+      "toId": 13,
+      "weight": 3
+    },
+    {
+      "id": 9,
+      "fromId": 5,
+      "toId": 19,
+      "weight": 3
+    },
+    {
+      "id": 10,
+      "fromId": 6,
+      "toId": 20,
+      "weight": 2
+    },
+    {
+      "id": 11,
+      "fromId": 7,
+      "toId": 6,
+      "weight": 1
+    },
+    {
+      "id": 12,
+      "fromId": 7,
+      "toId": 9,
+      "weight": 1
+    },
+    {
+      "id": 13,
+      "fromId": 8,
+      "toId": 3,
+      "weight": 3
+    },
+    {
+      "id": 14,
+      "fromId": 9,
+      "toId": 2,
+      "weight": 3
+    },
+    {
+      "id": 15,
+      "fromId": 9,
+      "toId": 12,
+      "weight": 2
+    },
+    {
+      "id": 16,
+      "fromId": 10,
+      "toId": 3,
+      "weight": 3
+    },
+    {
+      "id": 17,
+      "fromId": 11,
+      "toId": 7,
+      "weight": 1
+    },
+    {
+      "id": 18,
+      "fromId": 11,
+      "toId": 16,
+      "weight": 2
+    },
+    {
+      "id": 19,
+      "fromId": 12,
+      "toId": 9,
+      "weight": 3
+    },
+    {
+      "id": 20,
+      "fromId": 13,
+      "toId": 5,
+      "weight": 3
+    },
+    {
+      "id": 21,
+      "fromId": 13,
+      "toId": 15,
+      "weight": 3
+    },
+    {
+      "id": 22,
+      "fromId": 13,
+      "toId": 16,
+      "weight": 2
+    },
+    {
+      "id": 23,
+      "fromId": 14,
+      "toId": 5,
+      "weight": 2
+    },
+    {
+      "id": 24,
+      "fromId": 14,
+      "toId": 15,
+      "weight": 1
+    },
+    {
+      "id": 25,
+      "fromId": 15,
+      "toId": 4,
+      "weight": 1
+    },
+    {
+      "id": 26,
+      "fromId": 15,
+      "toId": 7,
+      "weight": 2
+    },
+    {
+      "id": 27,
+      "fromId": 15,
+      "toId": 18,
+      "weight": 2
+    },
+    {
+      "id": 28,
+      "fromId": 16,
+      "toId": 1,
+      "weight": 1
+    },
+    {
+      "id": 29,
+      "fromId": 16,
+      "toId": 7,
+      "weight": 3
+    },
+    {
+      "id": 30,
+      "fromId": 17,
+      "toId": 12,
+      "weight": 2
+    },
+    {
+      "id": 31,
+      "fromId": 17,
+      "toId": 15,
+      "weight": 3
+    },
+    {
+      "id": 32,
+      "fromId": 18,
+      "toId": 7,
+      "weight": 2
+    },
+    {
+      "id": 33,
+      "fromId": 18,
+      "toId": 16,
+      "weight": 3
+    },
+    {
+      "id": 34,
+      "fromId": 19,
+      "toId": 2,
+      "weight": 2
+    },
+    {
+      "id": 35,
+      "fromId": 19,
+      "toId": 12,
+      "weight": 3
+    },
+    {
+      "id": 36,
+      "fromId": 20,
+      "toId": 13,
+      "weight": 2
+    },
+    {
+      "id": 37,
+      "fromId": 20,
+      "toId": 17,
+      "weight": 2
+    }
+  ]
+}
