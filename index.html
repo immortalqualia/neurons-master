@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <title>Signal Graph</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <script src="graph-generator.js"></script>
   <style>
     html, body { margin: 0; padding: 0; overflow: hidden; }
     canvas { display: block; }
@@ -24,7 +25,9 @@
     #panel .row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
     #panel button { padding: 4px 8px; }
     #panel label { display: inline-flex; gap: 6px; align-items: center; }
+    #panel select { max-width: 140px; }
     #panel input[type="number"] { width: 90px; }
+    #panel input.short { width: 64px; }
     #panel .muted { color: #666; }
     #panel .sectionTitle { font-weight: 600; margin: 8px 0 6px; }
     #panel .hr { height: 1px; background: #e6e6e6; margin: 8px 0; }
@@ -62,6 +65,71 @@
   <div class="row">
     <span class="muted">Hover:</span>
     <span id="hoverInfo" class="mono muted">none</span>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="sectionTitle">Generator</div>
+  <div class="row">
+    <label>mode
+      <select id="genMode">
+        <option value="random">random</option>
+        <option value="backbone">backbone</option>
+      </select>
+    </label>
+    <label>seed
+      <input id="genSeed" class="short" type="number" step="1" placeholder="auto" />
+    </label>
+  </div>
+  <div class="row">
+    <label>nodes
+      <input id="genNodes" class="short" type="number" step="1" min="1" value="222" />
+    </label>
+    <label>blue %
+      <input id="genBluePercent" class="short" type="number" step="1" min="0" max="100" value="40" />
+    </label>
+    <label>out
+      <input id="genOutputMag" class="short" type="number" step="0.1" min="0" value="1" />
+    </label>
+  </div>
+  <div class="row">
+    <label>edges
+      <input id="genEdgesMin" class="short" type="number" step="1" min="0" value="1" />
+      <span class="muted">-</span>
+      <input id="genEdgesMax" class="short" type="number" step="1" min="0" value="3" />
+    </label>
+    <label>extra
+      <input id="genExtraEdges" class="short" type="number" step="1" min="0" value="200" />
+    </label>
+  </div>
+  <div class="row">
+    <label>weight
+      <input id="genWeightMin" class="short" type="number" step="1" min="1" value="1" />
+      <span class="muted">-</span>
+      <input id="genWeightMax" class="short" type="number" step="1" min="1" value="3" />
+    </label>
+    <label>mute
+      <input id="genMuteProb" class="short" type="number" step="0.05" min="0" max="1" value="0.5" />
+    </label>
+  </div>
+  <div class="row">
+    <label>threshold
+      <input id="genThresholdMin" class="short" type="number" step="0.1" min="0" value="1" />
+      <span class="muted">-</span>
+      <input id="genThresholdMax" class="short" type="number" step="0.1" min="0" value="1" />
+    </label>
+  </div>
+  <div class="row">
+    <label>w
+      <input id="genCanvasW" class="short" type="number" step="100" min="100" value="2200" />
+    </label>
+    <label>h
+      <input id="genCanvasH" class="short" type="number" step="100" min="100" value="2200" />
+    </label>
+    <button id="btnGenerate" type="button">Generate</button>
+  </div>
+  <div class="row">
+    <span id="genInfo" class="mono muted">ready</span>
   </div>
 
   <div class="hr"></div>
@@ -645,12 +713,33 @@ const inpOutput = document.getElementById("inpOutput");
 const inpThreshold = document.getElementById("inpThreshold");
 const inpFreq = document.getElementById("inpFreq");
 const hoverInfo = document.getElementById("hoverInfo");
+const genInfo = document.getElementById("genInfo");
 
 function readPanelConfig() {
   return {
     output: clampNumber(inpOutput.value, 1),
     threshold: clampNumber(inpThreshold.value, 1),
     frequency: Math.max(0, clampNumber(inpFreq.value, 0))
+  };
+}
+
+function readGeneratorConfig() {
+  return {
+    mode: document.getElementById("genMode").value,
+    seed: document.getElementById("genSeed").value,
+    nodeCount: document.getElementById("genNodes").value,
+    canvasWidth: document.getElementById("genCanvasW").value,
+    canvasHeight: document.getElementById("genCanvasH").value,
+    bluePercent: document.getElementById("genBluePercent").value,
+    outputMag: document.getElementById("genOutputMag").value,
+    edgesMin: document.getElementById("genEdgesMin").value,
+    edgesMax: document.getElementById("genEdgesMax").value,
+    extraEdges: document.getElementById("genExtraEdges").value,
+    weightMin: document.getElementById("genWeightMin").value,
+    weightMax: document.getElementById("genWeightMax").value,
+    thresholdMin: document.getElementById("genThresholdMin").value,
+    thresholdMax: document.getElementById("genThresholdMax").value,
+    muteProb: document.getElementById("genMuteProb").value
   };
 }
 
@@ -678,6 +767,18 @@ function setup() {
   document.getElementById("btnClear").addEventListener("click", () => {
     graph.ensureAudio();
     graph.clearSignals();
+  });
+
+  document.getElementById("btnGenerate").addEventListener("click", () => {
+    graph.ensureAudio();
+    try {
+      const generated = window.GraphGenerator.generateGraph(readGeneratorConfig());
+      graph.deserialize(generated);
+      genInfo.textContent = `${generated.nodes.length} nodes, ${generated.edges.length} edges`;
+    } catch (e) {
+      genInfo.textContent = "generation failed";
+      alert("Failed to generate graph: " + (e && e.message ? e.message : String(e)));
+    }
   });
 
   // Panel edits apply to hovered node only (never overwrite panel values on hover)
