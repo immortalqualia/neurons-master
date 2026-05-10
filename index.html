@@ -221,15 +221,9 @@ class Mp3AppRecorder {
     this.silentGain.gain.value = 0;
 
     this.processor.onaudioprocess = (event) => {
-      if (!this.isRecording || !this.encoder) return;
+      if (!this.isRecording) return;
       const input = event.inputBuffer.getChannelData(0);
-      const samples = new Int16Array(input.length);
-      for (let i = 0; i < input.length; i++) {
-        const s = Math.max(-1, Math.min(1, input[i]));
-        samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-      }
-      const mp3buf = this.encoder.encodeBuffer(samples);
-      if (mp3buf.length > 0) this.chunks.push(mp3buf);
+      this.chunks.push(new Float32Array(input));
     };
 
     this.sourceNode.connect(this.processor);
@@ -251,16 +245,34 @@ class Mp3AppRecorder {
     }
     if (this.silentGain) this.silentGain.disconnect();
 
-    const tail = this.encoder ? this.encoder.flush() : null;
-    if (tail && tail.length > 0) this.chunks.push(tail);
+    const mp3Chunks = [];
+    if (this.encoder) {
+      for (const chunk of this.chunks) {
+        const samples = this.floatToInt16(chunk);
+        const mp3buf = this.encoder.encodeBuffer(samples);
+        if (mp3buf.length > 0) mp3Chunks.push(mp3buf);
+      }
 
-    const blob = new Blob(this.chunks, { type: "audio/mpeg" });
+      const tail = this.encoder.flush();
+      if (tail && tail.length > 0) mp3Chunks.push(tail);
+    }
+
+    const blob = new Blob(mp3Chunks, { type: "audio/mpeg" });
     this.processor = null;
     this.silentGain = null;
     this.encoder = null;
     this.chunks = [];
 
     return blob;
+  }
+
+  floatToInt16(input) {
+    const samples = new Int16Array(input.length);
+    for (let i = 0; i < input.length; i++) {
+      const s = Math.max(-1, Math.min(1, input[i]));
+      samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    return samples;
   }
 
   elapsedSeconds() {
