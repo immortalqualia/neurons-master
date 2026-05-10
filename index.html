@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <title>Signal Graph</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
   <script src="graph-generator.js"></script>
   <style>
     html, body { margin: 0; padding: 0; overflow: hidden; }
@@ -42,6 +43,12 @@
     <button id="btnLoad" type="button">Load</button>
     <button id="btnReset" type="button">Reset</button>
     <button id="btnClear" type="button">Clear signals</button>
+    <button id="btnRecordMp3" type="button">Record MP3</button>
+    <input id="inpRandomActivateCount" class="short" type="number" step="1" min="1" value="1" />
+    <button id="btnActivateRandom" type="button">Random node</button>
+  </div>
+  <div class="row">
+    <span id="recordInfo" class="mono muted">recording off</span>
   </div>
 
   <div class="hr"></div>
@@ -183,6 +190,84 @@ function isEditingInput() {
   return el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT");
 }
 
+class Mp3AppRecorder {
+  constructor(ctx, sourceNode) {
+    this.ctx = ctx;
+    this.sourceNode = sourceNode;
+    this.isRecording = false;
+    this.processor = null;
+    this.silentGain = null;
+    this.encoder = null;
+    this.chunks = [];
+    this.startedAt = 0;
+  }
+
+  start() {
+    if (this.isRecording) return;
+    if (!window.lamejs || !window.lamejs.Mp3Encoder) {
+      throw new Error("MP3 encoder failed to load");
+    }
+
+    const channels = 1;
+    const sampleRate = this.ctx.sampleRate;
+    const kbps = 128;
+
+    this.encoder = new window.lamejs.Mp3Encoder(channels, sampleRate, kbps);
+    this.chunks = [];
+    this.startedAt = Date.now();
+
+    this.processor = this.ctx.createScriptProcessor(4096, channels, channels);
+    this.silentGain = this.ctx.createGain();
+    this.silentGain.gain.value = 0;
+
+    this.processor.onaudioprocess = (event) => {
+      if (!this.isRecording || !this.encoder) return;
+      const input = event.inputBuffer.getChannelData(0);
+      const samples = new Int16Array(input.length);
+      for (let i = 0; i < input.length; i++) {
+        const s = Math.max(-1, Math.min(1, input[i]));
+        samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      const mp3buf = this.encoder.encodeBuffer(samples);
+      if (mp3buf.length > 0) this.chunks.push(mp3buf);
+    };
+
+    this.sourceNode.connect(this.processor);
+    this.processor.connect(this.silentGain);
+    this.silentGain.connect(this.ctx.destination);
+    this.isRecording = true;
+  }
+
+  stop() {
+    if (!this.isRecording) return null;
+    this.isRecording = false;
+
+    if (this.processor) {
+      try {
+        this.sourceNode.disconnect(this.processor);
+      } catch (_) {}
+      this.processor.disconnect();
+      this.processor.onaudioprocess = null;
+    }
+    if (this.silentGain) this.silentGain.disconnect();
+
+    const tail = this.encoder ? this.encoder.flush() : null;
+    if (tail && tail.length > 0) this.chunks.push(tail);
+
+    const blob = new Blob(this.chunks, { type: "audio/mpeg" });
+    this.processor = null;
+    this.silentGain = null;
+    this.encoder = null;
+    this.chunks = [];
+
+    return blob;
+  }
+
+  elapsedSeconds() {
+    return this.startedAt ? Math.max(0, Math.round((Date.now() - this.startedAt) / 1000)) : 0;
+  }
+}
+
 /* ---------- model ---------- */
 class Node {
   constructor(id, x, y, { output = 1, frequency = 0, threshold = 1 } = {}) {
@@ -239,6 +324,8 @@ class Graph {
     this.hoveredNodeId = null;
 
     this.audioCtx = null;
+    this.masterGain = null;
+    this.mp3Recorder = null;
     this.canvas = null;
     this.fileInput = null;
   }
@@ -274,14 +361,35 @@ class Graph {
   }
 
   ensureAudio() {
-    if (this.audioCtx) return;
     try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      this.audioCtx = new Ctx();
+      if (!this.audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        this.audioCtx = new Ctx();
+        this.masterGain = this.audioCtx.createGain();
+        this.masterGain.gain.value = 1;
+        this.masterGain.connect(this.audioCtx.destination);
+        this.mp3Recorder = new Mp3AppRecorder(this.audioCtx, this.masterGain);
+      }
       if (this.audioCtx.state === "suspended") this.audioCtx.resume();
     } catch (_) {
       this.audioCtx = null;
+      this.masterGain = null;
+      this.mp3Recorder = null;
     }
+  }
+
+  toggleMp3Recording() {
+    this.ensureAudio();
+    if (!this.audioCtx || !this.masterGain || !this.mp3Recorder) {
+      throw new Error("Audio is not available in this browser");
+    }
+
+    if (!this.mp3Recorder.isRecording) {
+      this.mp3Recorder.start();
+      return { recording: true, blob: null };
+    }
+
+    return { recording: false, blob: this.mp3Recorder.stop() };
   }
 
   playTone(freqHz) {
@@ -302,7 +410,7 @@ class Graph {
     gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
 
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(this.masterGain || ctx.destination);
 
     osc.start(t0);
     osc.stop(t0 + dur + 0.02);
@@ -529,6 +637,23 @@ class Graph {
     }
   }
 
+  activateRandomNodes(count) {
+    const ids = this.nodeOrder.filter(id => this.nodes.has(id));
+    if (ids.length === 0) return 0;
+
+    const targetCount = constrain(Math.floor(clampNumber(count, 1)), 1, ids.length);
+    for (let i = ids.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ids[i], ids[j]] = [ids[j], ids[i]];
+    }
+
+    const now = millis();
+    for (const id of ids.slice(0, targetCount)) {
+      this.activateNode(id, now, { force: true });
+    }
+    return targetCount;
+  }
+
   onSignalArrive(edgeId) {
     const now = millis();
     const e = this.edges.get(edgeId);
@@ -714,6 +839,9 @@ const inpThreshold = document.getElementById("inpThreshold");
 const inpFreq = document.getElementById("inpFreq");
 const hoverInfo = document.getElementById("hoverInfo");
 const genInfo = document.getElementById("genInfo");
+const btnRecordMp3 = document.getElementById("btnRecordMp3");
+const recordInfo = document.getElementById("recordInfo");
+const inpRandomActivateCount = document.getElementById("inpRandomActivateCount");
 
 function readPanelConfig() {
   return {
@@ -743,6 +871,17 @@ function readGeneratorConfig() {
   };
 }
 
+function downloadBlob(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 /* ---------- p5 plumbing ---------- */
 const graph = new Graph();
 
@@ -767,6 +906,33 @@ function setup() {
   document.getElementById("btnClear").addEventListener("click", () => {
     graph.ensureAudio();
     graph.clearSignals();
+  });
+
+  document.getElementById("btnActivateRandom").addEventListener("click", () => {
+    graph.ensureAudio();
+    const activated = graph.activateRandomNodes(inpRandomActivateCount.value);
+    recordInfo.textContent = activated > 0 ? `activated ${activated}` : "no nodes";
+  });
+
+  btnRecordMp3.addEventListener("click", () => {
+    try {
+      const result = graph.toggleMp3Recording();
+      if (result.recording) {
+        btnRecordMp3.textContent = "Stop & save MP3";
+        recordInfo.textContent = "recording app audio";
+        return;
+      }
+
+      const ts = new Date().toISOString().replace(/[:.]/g, "-");
+      const blob = result.blob || new Blob([], { type: "audio/mpeg" });
+      downloadBlob(`signal-graph-${ts}.mp3`, blob);
+      btnRecordMp3.textContent = "Record MP3";
+      recordInfo.textContent = `saved ${Math.round(blob.size / 1024)} KB`;
+    } catch (e) {
+      btnRecordMp3.textContent = "Record MP3";
+      recordInfo.textContent = "recording failed";
+      alert("Failed to record MP3: " + (e && e.message ? e.message : String(e)));
+    }
   });
 
   document.getElementById("btnGenerate").addEventListener("click", () => {
