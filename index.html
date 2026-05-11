@@ -58,6 +58,8 @@
     <button id="btnLoad" type="button">Load</button>
     <button id="btnReset" type="button">Reset</button>
     <button id="btnClear" type="button">Clear signals</button>
+    <input id="inpPruneTicks" class="short" type="number" step="1" min="0" value="20" />
+    <button id="btnPruneNodes" type="button">Delete stale</button>
     <button id="btnRecordMp3" type="button">Record MP3</button>
     <input id="inpRandomActivateCount" class="short" type="number" step="1" min="1" value="1" />
     <button id="btnActivateRandom" type="button">Random node</button>
@@ -363,6 +365,9 @@ class Graph {
     this.audioCtx = null;
     this.masterGain = null;
     this.mp3Recorder = null;
+    this.pruneStep = 0;
+    this.createdNodeStep = new Map();
+    this.lastNodeActivityStep = new Map();
     this.canvas = null;
     this.fileInput = null;
   }
@@ -470,6 +475,9 @@ class Graph {
     this.edgeByPair.clear();
     this.nextNodeId = 1;
     this.nextEdgeId = 1;
+    this.pruneStep = 0;
+    this.createdNodeStep.clear();
+    this.lastNodeActivityStep.clear();
     this.selectedFromNodeId = null;
     this.draggingNodeId = null;
     this.hoveredNodeId = null;
@@ -532,6 +540,8 @@ class Graph {
       this.nodeOrder.push(id);
       this.outEdges.set(id, new Set());
       this.inEdges.set(id, new Set());
+      this.createdNodeStep.set(id, this.pruneStep);
+      this.lastNodeActivityStep.set(id, null);
 
       if (id > maxNodeId) maxNodeId = id;
     }
@@ -589,6 +599,8 @@ class Graph {
     this.nodeOrder = this.nodeOrder.filter(id => id !== nodeId);
     this.outEdges.delete(nodeId);
     this.inEdges.delete(nodeId);
+    this.createdNodeStep.delete(nodeId);
+    this.lastNodeActivityStep.delete(nodeId);
 
     if (this.selectedFromNodeId === nodeId) this.selectedFromNodeId = null;
     if (this.draggingNodeId === nodeId) this.draggingNodeId = null;
@@ -618,6 +630,8 @@ class Graph {
     this.nodeOrder.push(id);
     this.outEdges.set(id, new Set());
     this.inEdges.set(id, new Set());
+    this.createdNodeStep.set(id, this.pruneStep);
+    this.lastNodeActivityStep.set(id, null);
     return n;
   }
 
@@ -657,7 +671,7 @@ class Graph {
     return sum;
   }
 
-  activateNode(nodeId, now, { force = false } = {}) {
+  activateNode(nodeId, now, { force = false, step = this.pruneStep } = {}) {
     const n = this.nodes.get(nodeId);
     if (!n) return;
 
@@ -665,12 +679,15 @@ class Graph {
     if (!didActivate) return;
 
     this.playTone(n.frequency);
+    this.pruneStep = Math.max(this.pruneStep, step);
+    this.lastNodeActivityStep.set(nodeId, step);
 
     const outgoing = this.outEdges.get(nodeId);
     if (!outgoing) return;
 
+    const nextStep = step + 1;
     for (const edgeId of outgoing) {
-      setTimeout(() => this.onSignalArrive(edgeId), SIGNAL_DELAY);
+      setTimeout(() => this.onSignalArrive(edgeId, nextStep), SIGNAL_DELAY);
     }
   }
 
@@ -691,7 +708,7 @@ class Graph {
     return targetCount;
   }
 
-  onSignalArrive(edgeId) {
+  onSignalArrive(edgeId, step = this.pruneStep + 1) {
     const now = millis();
     const e = this.edges.get(edgeId);
     if (!e) return;
@@ -702,10 +719,44 @@ class Graph {
 
     if (!src.isActive(now)) return;
 
+    this.pruneStep = Math.max(this.pruneStep, step);
+
     const input = this.totalActiveInput(dst.id, now);
     if (input >= dst.threshold) {
-      this.activateNode(dst.id, now, { force: false });
+      this.activateNode(dst.id, now, { force: false, step });
     }
+  }
+
+  deleteStaleNodes(maxAgeTicks) {
+    const maxAge = Math.max(0, Math.floor(clampNumber(maxAgeTicks, 0)));
+    const toDelete = [];
+    const now = millis();
+
+    for (const id of this.nodeOrder) {
+      const n = this.nodes.get(id);
+      if (!n) continue;
+      if (n.isActive(now)) continue;
+
+      const outgoing = this.outEdges.get(id);
+      if (!outgoing || outgoing.size === 0) {
+        toDelete.push(id);
+        continue;
+      }
+
+      const createdStep = this.createdNodeStep.get(id) ?? this.pruneStep;
+      const lastActiveStep = this.lastNodeActivityStep.get(id);
+      const referenceStep = lastActiveStep === null || lastActiveStep === undefined
+        ? createdStep
+        : lastActiveStep;
+      const age = this.pruneStep - referenceStep;
+
+      if (age <= maxAge) continue;
+
+      toDelete.push(id);
+    }
+
+    for (const id of toDelete) this.deleteNode(id);
+    return toDelete.length;
   }
 
   // color helpers
@@ -881,6 +932,7 @@ const btnHidePanel = document.getElementById("btnHidePanel");
 const btnShowPanel = document.getElementById("btnShowPanel");
 const btnRecordMp3 = document.getElementById("btnRecordMp3");
 const recordInfo = document.getElementById("recordInfo");
+const inpPruneTicks = document.getElementById("inpPruneTicks");
 const inpRandomActivateCount = document.getElementById("inpRandomActivateCount");
 
 function readPanelConfig() {
@@ -959,6 +1011,11 @@ function setup() {
   document.getElementById("btnClear").addEventListener("click", () => {
     graph.ensureAudio();
     graph.clearSignals();
+  });
+
+  document.getElementById("btnPruneNodes").addEventListener("click", () => {
+    const deleted = graph.deleteStaleNodes(inpPruneTicks.value);
+    recordInfo.textContent = `deleted ${deleted}`;
   });
 
   document.getElementById("btnActivateRandom").addEventListener("click", () => {
