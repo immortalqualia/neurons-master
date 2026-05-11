@@ -1,8 +1,6 @@
 (function () {
   "use strict";
 
-  const FREQUENCIES = [110, 220, 330, 440, 550, 660, 880];
-
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -58,14 +56,18 @@
 
   function sanitizeOptions(raw = {}) {
     const nodeCount = clamp(toInt(raw.nodeCount, 222), 1, 5000);
-    const canvasWidth = clamp(toInt(raw.canvasWidth, 2200), 100, 20000);
-    const canvasHeight = clamp(toInt(raw.canvasHeight, 2200), 100, 20000);
+    const canvasWidth = clamp(toInt(raw.canvasWidth, 1000), 100, 20000);
+    const canvasHeight = clamp(toInt(raw.canvasHeight, 1000), 100, 20000);
     const edgesMin = Math.max(0, toInt(raw.edgesMin, 1));
     const edgesMax = Math.max(edgesMin, toInt(raw.edgesMax, 3));
-    const weightMin = Math.max(1, toInt(raw.weightMin, 1));
-    const weightMax = Math.max(weightMin, toInt(raw.weightMax, 3));
-    const thresholdMin = Math.max(0.000001, toFloat(raw.thresholdMin, 1));
-    const thresholdMax = Math.max(thresholdMin, toFloat(raw.thresholdMax, 1));
+    const thresholdA = Math.max(1, toInt(raw.thresholdMin, 1));
+    const thresholdB = Math.max(1, toInt(raw.thresholdMax, 1));
+    const thresholdMin = Math.min(thresholdA, thresholdB);
+    const thresholdMax = Math.max(thresholdA, thresholdB);
+    const freqA = Math.max(0, toFloat(raw.freqMin, 80));
+    const freqB = Math.max(0, toFloat(raw.freqMax, 1200));
+    const freqMin = Math.min(freqA, freqB);
+    const freqMax = Math.max(freqA, freqB);
 
     return {
       mode: raw.mode === "backbone" ? "backbone" : "random",
@@ -74,14 +76,13 @@
       canvasWidth,
       canvasHeight,
       blueRatio: clamp01(toFloat(raw.bluePercent, 40) / 100),
-      outputMag: Math.max(0, toFloat(raw.outputMag, 1)),
       edgesMin,
       edgesMax,
       extraEdges: Math.max(0, toInt(raw.extraEdges, 200)),
-      weightMin,
-      weightMax,
       thresholdMin,
       thresholdMax,
+      freqMin,
+      freqMax,
       muteProb: clamp01(toFloat(raw.muteProb, 0.5))
     };
   }
@@ -99,16 +100,16 @@
     return true;
   }
 
-  function makeNode(rng, id, output, opts) {
+  function makeNode(rng, id, polarity, opts) {
     const margin = 20;
-    const frequency = rng.random() < opts.muteProb ? 0 : rng.choice(FREQUENCIES);
+    const frequency = rng.random() < opts.muteProb ? 0 : rounded(rng.float(opts.freqMin, opts.freqMax), 2);
     return {
       id,
       x: rounded(rng.float(margin, Math.max(margin, opts.canvasWidth - margin))),
       y: rounded(rng.float(margin, Math.max(margin, opts.canvasHeight - margin))),
-      output,
+      polarity,
       frequency,
-      threshold: rounded(rng.float(opts.thresholdMin, opts.thresholdMax), 6),
+      threshold: rng.int(opts.thresholdMin, opts.thresholdMax),
       charge: 0
     };
   }
@@ -121,23 +122,34 @@
       .map(([fromId, toId]) => ({
         id: id++,
         fromId,
-        toId,
-        weight: rng.int(opts.weightMin, opts.weightMax)
+        toId
       }));
+  }
+
+  function addExtraPairs(rng, pairs, opts) {
+    const maxPairs = opts.nodeCount * Math.max(0, opts.nodeCount - 1);
+    const targetTotal = Math.min(pairs.size + opts.extraEdges, maxPairs);
+    const maxAttempts = Math.max(2000, opts.extraEdges * 200);
+    let attempts = 0;
+
+    while (pairs.size < targetTotal && attempts < maxAttempts) {
+      attempts++;
+      addPair(pairs, rng.int(1, opts.nodeCount), rng.int(1, opts.nodeCount));
+    }
   }
 
   function generateRandom(opts) {
     const rng = makeRng(opts.seed);
     const positiveCount = clamp(Math.round(opts.nodeCount * (1 - opts.blueRatio)), 0, opts.nodeCount);
-    const outputs = [
-      ...Array(positiveCount).fill(Math.abs(opts.outputMag)),
-      ...Array(opts.nodeCount - positiveCount).fill(-Math.abs(opts.outputMag))
+    const polarities = [
+      ...Array(positiveCount).fill(1),
+      ...Array(opts.nodeCount - positiveCount).fill(-1)
     ];
-    rng.shuffle(outputs);
+    rng.shuffle(polarities);
 
     const nodes = [];
     for (let id = 1; id <= opts.nodeCount; id++) {
-      nodes.push(makeNode(rng, id, outputs[id - 1], opts));
+      nodes.push(makeNode(rng, id, polarities[id - 1], opts));
     }
 
     const pairs = new Set();
@@ -154,6 +166,7 @@
       for (const toId of candidates.slice(0, k)) addPair(pairs, fromId, toId);
     }
 
+    addExtraPairs(rng, pairs, opts);
     return { version: 2, nodes, edges: buildEdges(rng, pairs, opts) };
   }
 
@@ -170,10 +183,10 @@
     const nodes = [];
 
     for (let id = 1; id <= opts.nodeCount; id++) {
-      const output = backboneIds.has(id)
-        ? Math.abs(opts.outputMag)
-        : (rng.random() < opts.blueRatio ? -Math.abs(opts.outputMag) : Math.abs(opts.outputMag));
-      nodes.push(makeNode(rng, id, output, { ...opts, thresholdMin: 1, thresholdMax: 1 }));
+      const polarity = backboneIds.has(id)
+        ? 1
+        : (rng.random() < opts.blueRatio ? -1 : 1);
+      nodes.push(makeNode(rng, id, polarity, { ...opts, thresholdMin: 1, thresholdMax: 1 }));
     }
 
     const pairs = new Set();
@@ -181,28 +194,22 @@
       addPair(pairs, backbone[i], backbone[i + 1]);
     }
 
-    const outCount = new Map();
-    for (let id = 1; id <= opts.nodeCount; id++) outCount.set(id, 0);
+    const sourceEdgeCount = new Map();
+    for (let id = 1; id <= opts.nodeCount; id++) sourceEdgeCount.set(id, 0);
     for (const key of pairs) {
       const fromId = Number(key.split("->")[0]);
-      outCount.set(fromId, (outCount.get(fromId) || 0) + 1);
+      sourceEdgeCount.set(fromId, (sourceEdgeCount.get(fromId) || 0) + 1);
     }
 
     for (let fromId = 1; fromId <= opts.nodeCount; fromId++) {
       if (opts.nodeCount <= 1) break;
-      if ((outCount.get(fromId) || 0) > 0) continue;
+      if ((sourceEdgeCount.get(fromId) || 0) > 0) continue;
       let toId = fromId;
       while (toId === fromId) toId = rng.int(1, opts.nodeCount);
-      if (addPair(pairs, fromId, toId)) outCount.set(fromId, (outCount.get(fromId) || 0) + 1);
+      if (addPair(pairs, fromId, toId)) sourceEdgeCount.set(fromId, (sourceEdgeCount.get(fromId) || 0) + 1);
     }
 
-    const targetTotal = pairs.size + opts.extraEdges;
-    const maxAttempts = Math.max(2000, opts.extraEdges * 200);
-    let attempts = 0;
-    while (pairs.size < targetTotal && attempts < maxAttempts) {
-      attempts++;
-      addPair(pairs, rng.int(1, opts.nodeCount), rng.int(1, opts.nodeCount));
-    }
+    addExtraPairs(rng, pairs, opts);
 
     return { version: 2, nodes, edges: buildEdges(rng, pairs, opts) };
   }

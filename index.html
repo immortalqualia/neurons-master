@@ -12,7 +12,7 @@
     #panel {
       position: fixed;
       top: 8px;
-      left: 8px;
+      right: 8px;
       z-index: 9999;
       background: rgba(255,255,255,0.92);
       border: 1px solid #ddd;
@@ -48,11 +48,8 @@
 
   <div class="sectionTitle">Node settings</div>
   <div class="row">
-    <label>output
-      <input id="inpOutput" type="number" step="0.1" value="1" />
-    </label>
     <label>threshold
-      <input id="inpThreshold" type="number" step="0.1" value="1" />
+      <input id="inpThreshold" type="number" step="1" value="1" />
     </label>
   </div>
   <div class="row">
@@ -76,9 +73,6 @@
         <option value="random">random</option>
       </select>
     </label>
-    <label>seed
-      <input id="genSeed" class="short" type="number" step="1" placeholder="auto" />
-    </label>
   </div>
   <div class="row">
     <label>nodes
@@ -86,9 +80,6 @@
     </label>
     <label>blue %
       <input id="genBluePercent" class="short" type="number" step="1" min="0" max="100" value="40" />
-    </label>
-    <label>out
-      <input id="genOutputMag" class="short" type="number" step="0.1" min="0" value="1" />
     </label>
   </div>
   <div class="row">
@@ -102,28 +93,30 @@
     </label>
   </div>
   <div class="row">
-    <label>weight
-      <input id="genWeightMin" class="short" type="number" step="1" min="1" value="1" />
-      <span class="muted">-</span>
-      <input id="genWeightMax" class="short" type="number" step="1" min="1" value="3" />
-    </label>
     <label>mute
       <input id="genMuteProb" class="short" type="number" step="0.05" min="0" max="1" value="0.5" />
     </label>
   </div>
   <div class="row">
-    <label>threshold
-      <input id="genThresholdMin" class="short" type="number" step="0.1" min="0" value="1" />
+    <label>freq Hz
+      <input id="genFreqMin" class="short" type="number" step="1" min="0" value="80" />
       <span class="muted">-</span>
-      <input id="genThresholdMax" class="short" type="number" step="0.1" min="0" value="1" />
+      <input id="genFreqMax" class="short" type="number" step="1" min="0" value="1200" />
+    </label>
+  </div>
+  <div class="row">
+    <label>threshold
+      <input id="genThresholdMin" class="short" type="number" step="1" min="1" value="1" />
+      <span class="muted">-</span>
+      <input id="genThresholdMax" class="short" type="number" step="1" min="1" value="1" />
     </label>
   </div>
   <div class="row">
     <label>w
-      <input id="genCanvasW" class="short" type="number" step="100" min="100" value="2200" />
+      <input id="genCanvasW" class="short" type="number" step="100" min="100" value="1000" />
     </label>
     <label>h
-      <input id="genCanvasH" class="short" type="number" step="100" min="100" value="2200" />
+      <input id="genCanvasH" class="short" type="number" step="100" min="100" value="1000" />
     </label>
     <button id="btnGenerate" type="button">Generate</button>
   </div>
@@ -184,11 +177,11 @@ function isEditingInput() {
 
 /* ---------- model ---------- */
 class Node {
-  constructor(id, x, y, { output = 1, frequency = 0, threshold = 1 } = {}) {
+  constructor(id, x, y, { polarity = 1, frequency = 0, threshold = 1 } = {}) {
     this.id = id;
     this.x = x;
     this.y = y;
-    this.output = output;         // can be negative
+    this.polarity = polarity >= 0 ? 1 : -1;
     this.frequency = Math.max(0, frequency);
     this.threshold = threshold;   // numeric
     this.activeUntil = 0;         // millis timestamp
@@ -210,11 +203,10 @@ class Node {
 }
 
 class Edge {
-  constructor(id, fromId, toId, weight = 1) {
+  constructor(id, fromId, toId) {
     this.id = id;
     this.fromId = fromId;
     this.toId = toId;
-    this.weight = weight;
   }
 }
 
@@ -226,7 +218,7 @@ class Graph {
     this.nodeOrder = [];
     this.edgeOrder = [];
 
-    this.outEdges = new Map();
+    this.forwardEdges = new Map();
     this.inEdges  = new Map();
     this.edgeByPair = new Map();
 
@@ -333,7 +325,7 @@ class Graph {
     this.edges.clear();
     this.nodeOrder = [];
     this.edgeOrder = [];
-    this.outEdges.clear();
+    this.forwardEdges.clear();
     this.inEdges.clear();
     this.edgeByPair.clear();
     this.nextNodeId = 1;
@@ -365,7 +357,7 @@ class Graph {
         .map(n => ({
           id: n.id,
           x: n.x, y: n.y,
-          output: n.output,
+          polarity: n.polarity,
           frequency: n.frequency,
           threshold: n.threshold
         })),
@@ -375,8 +367,7 @@ class Graph {
         .map(e => ({
           id: e.id,
           fromId: e.fromId,
-          toId: e.toId,
-          weight: e.weight
+          toId: e.toId
         }))
     };
   }
@@ -393,15 +384,17 @@ class Graph {
       const x = clampNumber(nd.x, 0);
       const y = clampNumber(nd.y, 0);
 
+      const legacyOutput = clampNumber(nd.output, 1);
+      const polarity = nd.polarity === undefined ? legacyOutput : clampNumber(nd.polarity, 1);
       const n = new Node(id, x, y, {
-        output: clampNumber(nd.output, 1),
+        polarity,
         frequency: Math.max(0, clampNumber(nd.frequency, 0)),
-        threshold: clampNumber(nd.threshold, 1)
+        threshold: Math.trunc(clampNumber(nd.threshold, 1))
       });
 
       this.nodes.set(id, n);
       this.nodeOrder.push(id);
-      this.outEdges.set(id, new Set());
+      this.forwardEdges.set(id, new Set());
       this.inEdges.set(id, new Set());
 
       if (id > maxNodeId) maxNodeId = id;
@@ -412,24 +405,20 @@ class Graph {
       const id = Math.max(1, Math.floor(clampNumber(ed.id, 0)));
       const fromId = Math.max(1, Math.floor(clampNumber(ed.fromId, 0)));
       const toId = Math.max(1, Math.floor(clampNumber(ed.toId, 0)));
-      const weight = clampNumber(ed.weight, 1);
 
       if (!this.nodes.has(fromId) || !this.nodes.has(toId) || fromId === toId) continue;
 
       const key = `${fromId}->${toId}`;
       if (this.edgeByPair.has(key)) {
-        const existingId = this.edgeByPair.get(key);
-        const ex = this.edges.get(existingId);
-        if (ex) ex.weight += weight;
         continue;
       }
 
-      const e = new Edge(id, fromId, toId, weight);
+      const e = new Edge(id, fromId, toId);
       this.edges.set(id, e);
       this.edgeOrder.push(id);
       this.edgeByPair.set(key, id);
 
-      this.outEdges.get(fromId).add(id);
+      this.forwardEdges.get(fromId).add(id);
       this.inEdges.get(toId).add(id);
 
       if (id > maxEdgeId) maxEdgeId = id;
@@ -451,14 +440,14 @@ class Graph {
   deleteNode(nodeId) {
     if (!this.nodes.has(nodeId)) return;
 
-    const out = this.outEdges.get(nodeId) || new Set();
+    const forward = this.forwardEdges.get(nodeId) || new Set();
     const inn = this.inEdges.get(nodeId) || new Set();
-    const toRemove = new Set([...out, ...inn]);
+    const toRemove = new Set([...forward, ...inn]);
     for (const edgeId of toRemove) this.deleteEdge(edgeId);
 
     this.nodes.delete(nodeId);
     this.nodeOrder = this.nodeOrder.filter(id => id !== nodeId);
-    this.outEdges.delete(nodeId);
+    this.forwardEdges.delete(nodeId);
     this.inEdges.delete(nodeId);
     this.activeNodeIds.delete(nodeId);
     this.externalStimulusNodeIds.delete(nodeId);
@@ -472,8 +461,8 @@ class Graph {
     const e = this.edges.get(edgeId);
     if (!e) return;
 
-    const out = this.outEdges.get(e.fromId);
-    if (out) out.delete(edgeId);
+    const forward = this.forwardEdges.get(e.fromId);
+    if (forward) forward.delete(edgeId);
     const inn = this.inEdges.get(e.toId);
     if (inn) inn.delete(edgeId);
 
@@ -489,7 +478,7 @@ class Graph {
 
     this.nodes.set(id, n);
     this.nodeOrder.push(id);
-    this.outEdges.set(id, new Set());
+    this.forwardEdges.set(id, new Set());
     this.inEdges.set(id, new Set());
     return n;
   }
@@ -501,8 +490,6 @@ class Graph {
     const key = `${fromId}->${toId}`;
     const existingId = this.edgeByPair.get(key);
     if (existingId) {
-      const e = this.edges.get(existingId);
-      if (e) e.weight += 1;
       return;
     }
 
@@ -512,7 +499,7 @@ class Graph {
     this.edgeOrder.push(id);
     this.edgeByPair.set(key, id);
 
-    this.outEdges.get(fromId).add(id);
+    this.forwardEdges.get(fromId).add(id);
     this.inEdges.get(toId).add(id);
   }
 
@@ -529,14 +516,14 @@ class Graph {
       const src = this.nodes.get(fromId);
       if (!src) continue;
 
-      const outgoing = this.outEdges.get(fromId);
-      if (!outgoing) continue;
+      const forward = this.forwardEdges.get(fromId);
+      if (!forward) continue;
 
-      for (const edgeId of outgoing) {
+      for (const edgeId of forward) {
         const e = this.edges.get(edgeId);
         if (!e || !this.nodes.has(e.toId)) continue;
         const prev = inputByNodeId.get(e.toId) || 0;
-        inputByNodeId.set(e.toId, prev + e.weight * src.output);
+        inputByNodeId.set(e.toId, prev + src.polarity);
       }
     }
 
@@ -563,18 +550,15 @@ class Graph {
   }
 
   // color helpers
-  hueForOutput(out) {
-    if (out > 0) return HUE_POS;
-    if (out < 0) return HUE_NEG;
-    return 0;
+  hueForPolarity(polarity) {
+    return polarity >= 0 ? HUE_POS : HUE_NEG;
   }
 
   nodeFill(node, now) {
     const active = node.isActive(now);
     const b = active ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
 
-    if (node.output === 0) return color(0, 0, b);
-    const h = this.hueForOutput(node.output);
+    const h = this.hueForPolarity(node.polarity);
     return color(h, SAT, b);
   }
 
@@ -582,24 +566,21 @@ class Graph {
     const active = node.isActive(now);
     const b = active ? Math.max(10, BRIGHT_ACTIVE - 15) : Math.max(10, BRIGHT_INACTIVE - 10);
 
-    if (node.output === 0) return color(0, 0, b);
-    const h = this.hueForOutput(node.output);
+    const h = this.hueForPolarity(node.polarity);
     return color(h, SAT, b);
   }
 
   edgeColorFromSource(srcNode, now) {
     const b = this.activeNodeIds.has(srcNode.id) ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
 
-    if (srcNode.output === 0) return color(0, 0, b);
-    const h = this.hueForOutput(srcNode.output);
+    const h = this.hueForPolarity(srcNode.polarity);
     return color(h, SAT, b);
   }
 
   // threshold -> border thickness (restored)
   nodeBorderWidth(node) {
     const t = Math.abs(Number(node.threshold)) || 0;
-    // scale moderately, clamp to avoid ridiculous thickness
-    return constrain(1 + t, 1, 12);
+    return constrain(1 + t * 2, 1, 24);
   }
 
   updateHover(mx, my) {
@@ -724,7 +705,6 @@ class Graph {
 }
 
 /* ---------- UI binding ---------- */
-const inpOutput = document.getElementById("inpOutput");
 const inpThreshold = document.getElementById("inpThreshold");
 const inpFreq = document.getElementById("inpFreq");
 const hoverInfo = document.getElementById("hoverInfo");
@@ -732,8 +712,7 @@ const genInfo = document.getElementById("genInfo");
 
 function readPanelConfig() {
   return {
-    output: clampNumber(inpOutput.value, 1),
-    threshold: clampNumber(inpThreshold.value, 1),
+    threshold: Math.trunc(clampNumber(inpThreshold.value, 1)),
     frequency: Math.max(0, clampNumber(inpFreq.value, 0))
   };
 }
@@ -741,19 +720,18 @@ function readPanelConfig() {
 function readGeneratorConfig() {
   return {
     mode: document.getElementById("genMode").value,
-    seed: document.getElementById("genSeed").value,
+    seed: "",
     nodeCount: document.getElementById("genNodes").value,
     canvasWidth: document.getElementById("genCanvasW").value,
     canvasHeight: document.getElementById("genCanvasH").value,
     bluePercent: document.getElementById("genBluePercent").value,
-    outputMag: document.getElementById("genOutputMag").value,
     edgesMin: document.getElementById("genEdgesMin").value,
     edgesMax: document.getElementById("genEdgesMax").value,
     extraEdges: document.getElementById("genExtraEdges").value,
-    weightMin: document.getElementById("genWeightMin").value,
-    weightMax: document.getElementById("genWeightMax").value,
     thresholdMin: document.getElementById("genThresholdMin").value,
     thresholdMax: document.getElementById("genThresholdMax").value,
+    freqMin: document.getElementById("genFreqMin").value,
+    freqMax: document.getElementById("genFreqMax").value,
     muteProb: document.getElementById("genMuteProb").value
   };
 }
@@ -804,12 +782,10 @@ function setup() {
     if (!n) return;
 
     const cfg = readPanelConfig();
-    n.output = cfg.output;
     n.threshold = cfg.threshold;
     n.frequency = cfg.frequency;
   };
 
-  inpOutput.addEventListener("input", applyPanelToHoveredNode);
   inpThreshold.addEventListener("input", applyPanelToHoveredNode);
   inpFreq.addEventListener("input", applyPanelToHoveredNode);
 
