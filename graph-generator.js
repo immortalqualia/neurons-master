@@ -1,8 +1,6 @@
 (function () {
   "use strict";
 
-  const FREQUENCIES = [110, 220, 330, 440, 550, 660, 880];
-
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -64,8 +62,20 @@
     const edgesMax = Math.max(edgesMin, toInt(raw.edgesMax, 3));
     const weightMin = Math.max(1, toInt(raw.weightMin, 1));
     const weightMax = Math.max(weightMin, toInt(raw.weightMax, 3));
-    const thresholdMin = Math.max(0.000001, toFloat(raw.thresholdMin, 1));
-    const thresholdMax = Math.max(thresholdMin, toFloat(raw.thresholdMax, 1));
+    const thresholdMin = Math.max(0.000001, toFloat(raw.thresholdMin, 100));
+    const thresholdMax = Math.max(thresholdMin, toFloat(raw.thresholdMax, 100));
+    const pulseMin = Math.max(0, toFloat(raw.pulseMin, 100));
+    const pulseMax = Math.max(pulseMin, toFloat(raw.pulseMax, 100));
+    const decayMin = Math.max(0, toFloat(raw.decayMin, 10));
+    const decayMax = Math.max(decayMin, toFloat(raw.decayMax, 10));
+    const minChargeA = toFloat(raw.minChargeMin, 0);
+    const minChargeB = toFloat(raw.minChargeMax, 0);
+    const minChargeMin = Math.min(minChargeA, minChargeB);
+    const minChargeMax = Math.max(minChargeA, minChargeB);
+    const freqA = Math.max(0, toFloat(raw.freqMin, 80));
+    const freqB = Math.max(0, toFloat(raw.freqMax, 1200));
+    const freqMin = Math.min(freqA, freqB);
+    const freqMax = Math.max(freqA, freqB);
 
     return {
       mode: raw.mode === "backbone" ? "backbone" : "random",
@@ -82,6 +92,15 @@
       weightMax,
       thresholdMin,
       thresholdMax,
+      pulseMin,
+      pulseMax,
+      decayMin,
+      decayMax,
+      minChargeMin,
+      minChargeMax,
+      freqMin,
+      freqMax,
+      noTwoCycles: raw.noTwoCycles !== false && raw.noTwoCycles !== "false",
       muteProb: clamp01(toFloat(raw.muteProb, 0.5))
     };
   }
@@ -91,17 +110,18 @@
     return Math.round(value * p) / p;
   }
 
-  function addPair(pairs, fromId, toId) {
+  function addPair(pairs, fromId, toId, opts = {}) {
     if (fromId === toId) return false;
     const key = `${fromId}->${toId}`;
     if (pairs.has(key)) return false;
+    if (opts.noTwoCycles && pairs.has(`${toId}->${fromId}`)) return false;
     pairs.add(key);
     return true;
   }
 
   function makeNode(rng, id, output, opts) {
     const margin = 20;
-    const frequency = rng.random() < opts.muteProb ? 0 : rng.choice(FREQUENCIES);
+    const frequency = rng.random() < opts.muteProb ? 0 : rounded(rng.float(opts.freqMin, opts.freqMax), 2);
     return {
       id,
       x: rounded(rng.float(margin, Math.max(margin, opts.canvasWidth - margin))),
@@ -109,6 +129,9 @@
       output,
       frequency,
       threshold: rounded(rng.float(opts.thresholdMin, opts.thresholdMax), 6),
+      pulse: rounded(rng.float(opts.pulseMin, opts.pulseMax), 6),
+      decay: rounded(rng.float(opts.decayMin, opts.decayMax), 6),
+      minCharge: rounded(rng.float(opts.minChargeMin, opts.minChargeMax), 6),
       charge: 0
     };
   }
@@ -124,6 +147,19 @@
         toId,
         weight: rng.int(opts.weightMin, opts.weightMax)
       }));
+  }
+
+  function addExtraPairs(rng, pairs, opts) {
+    const targetTotal = Math.min(
+      pairs.size + opts.extraEdges,
+      opts.nodeCount * Math.max(0, opts.nodeCount - 1)
+    );
+    const maxAttempts = Math.max(2000, opts.extraEdges * 200);
+    let attempts = 0;
+    while (pairs.size < targetTotal && attempts < maxAttempts) {
+      attempts++;
+      addPair(pairs, rng.int(1, opts.nodeCount), rng.int(1, opts.nodeCount), opts);
+    }
   }
 
   function generateRandom(opts) {
@@ -151,9 +187,10 @@
         if (toId !== fromId) candidates.push(toId);
       }
       rng.shuffle(candidates);
-      for (const toId of candidates.slice(0, k)) addPair(pairs, fromId, toId);
+      for (const toId of candidates.slice(0, k)) addPair(pairs, fromId, toId, opts);
     }
 
+    addExtraPairs(rng, pairs, opts);
     return { version: 2, nodes, edges: buildEdges(rng, pairs, opts) };
   }
 
@@ -173,12 +210,12 @@
       const output = backboneIds.has(id)
         ? Math.abs(opts.outputMag)
         : (rng.random() < opts.blueRatio ? -Math.abs(opts.outputMag) : Math.abs(opts.outputMag));
-      nodes.push(makeNode(rng, id, output, { ...opts, thresholdMin: 1, thresholdMax: 1 }));
+      nodes.push(makeNode(rng, id, output, opts));
     }
 
     const pairs = new Set();
     for (let i = 0; i < backbone.length - 1; i++) {
-      addPair(pairs, backbone[i], backbone[i + 1]);
+      addPair(pairs, backbone[i], backbone[i + 1], opts);
     }
 
     const outCount = new Map();
@@ -193,17 +230,10 @@
       if ((outCount.get(fromId) || 0) > 0) continue;
       let toId = fromId;
       while (toId === fromId) toId = rng.int(1, opts.nodeCount);
-      if (addPair(pairs, fromId, toId)) outCount.set(fromId, (outCount.get(fromId) || 0) + 1);
+      if (addPair(pairs, fromId, toId, opts)) outCount.set(fromId, (outCount.get(fromId) || 0) + 1);
     }
 
-    const targetTotal = pairs.size + opts.extraEdges;
-    const maxAttempts = Math.max(2000, opts.extraEdges * 200);
-    let attempts = 0;
-    while (pairs.size < targetTotal && attempts < maxAttempts) {
-      attempts++;
-      addPair(pairs, rng.int(1, opts.nodeCount), rng.int(1, opts.nodeCount));
-    }
-
+    addExtraPairs(rng, pairs, opts);
     return { version: 2, nodes, edges: buildEdges(rng, pairs, opts) };
   }
 

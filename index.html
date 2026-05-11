@@ -29,20 +29,38 @@
     #panel select { max-width: 140px; }
     #panel input[type="number"] { width: 90px; }
     #panel input.short { width: 64px; }
+    #panel input.tiny { width: 52px; }
     #panel .muted { color: #666; }
+    #panel .topbar { justify-content: space-between; }
     #panel .sectionTitle { font-weight: 600; margin: 8px 0 6px; }
     #panel .hr { height: 1px; background: #e6e6e6; margin: 8px 0; }
     #panel .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    #btnShowPanel {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 9999;
+      padding: 4px 8px;
+      display: none;
+    }
   </style>
 </head>
 <body>
 
+<button id="btnShowPanel" type="button">Panel</button>
+
 <div id="panel">
+  <div class="row topbar">
+    <span class="sectionTitle">Controls</span>
+    <button id="btnHidePanel" type="button">Hide</button>
+  </div>
   <div class="row">
     <button id="btnSave" type="button">Save</button>
     <button id="btnLoad" type="button">Load</button>
     <button id="btnReset" type="button">Reset</button>
     <button id="btnClear" type="button">Clear signals</button>
+    <input id="inpInactiveTicks" class="short" type="number" step="1" min="0" value="20" />
+    <button id="btnDeleteInactive" type="button">Delete inactive</button>
     <button id="btnRecordMp3" type="button">Record MP3</button>
     <input id="inpRandomActivateCount" class="short" type="number" step="1" min="1" value="1" />
     <button id="btnActivateRandom" type="button">Random node</button>
@@ -59,7 +77,18 @@
       <input id="inpOutput" type="number" step="0.1" value="1" />
     </label>
     <label>threshold
-      <input id="inpThreshold" type="number" step="0.1" value="1" />
+      <input id="inpThreshold" type="number" step="1" min="0" value="100" />
+    </label>
+  </div>
+  <div class="row">
+    <label>pulse
+      <input id="inpNodePulse" type="number" step="1" min="0" value="100" />
+    </label>
+    <label>decay
+      <input id="inpNodeDecay" type="number" step="1" min="0" value="10" />
+    </label>
+    <label>min
+      <input id="inpNodeMinCharge" type="number" step="1" value="0" />
     </label>
   </div>
   <div class="row">
@@ -72,6 +101,14 @@
   <div class="row">
     <span class="muted">Hover:</span>
     <span id="hoverInfo" class="mono muted">none</span>
+  </div>
+  <div class="row">
+    <label>signal
+      <select id="signalMode">
+        <option value="accumulation">accumulation</option>
+        <option value="classic">classic</option>
+      </select>
+    </label>
   </div>
 
   <div class="hr"></div>
@@ -108,6 +145,9 @@
     <label>extra
       <input id="genExtraEdges" class="short" type="number" step="1" min="0" value="200" />
     </label>
+    <label>no 2-cycle
+      <input id="genNoTwoCycles" type="checkbox" checked />
+    </label>
   </div>
   <div class="row">
     <label>weight
@@ -120,10 +160,36 @@
     </label>
   </div>
   <div class="row">
-    <label>threshold
-      <input id="genThresholdMin" class="short" type="number" step="0.1" min="0" value="1" />
+    <label>freq Hz
+      <input id="genFreqMin" class="short" type="number" step="1" min="0" value="80" />
       <span class="muted">-</span>
-      <input id="genThresholdMax" class="short" type="number" step="0.1" min="0" value="1" />
+      <input id="genFreqMax" class="short" type="number" step="1" min="0" value="1200" />
+    </label>
+  </div>
+  <div class="row">
+    <label>threshold
+      <input id="genThresholdMin" class="short" type="number" step="1" min="0" value="100" />
+      <span class="muted">-</span>
+      <input id="genThresholdMax" class="short" type="number" step="1" min="0" value="100" />
+    </label>
+  </div>
+  <div class="row">
+    <label>pulse
+      <input id="genPulseMin" class="short" type="number" step="1" min="0" value="100" />
+      <span class="muted">-</span>
+      <input id="genPulseMax" class="short" type="number" step="1" min="0" value="100" />
+    </label>
+    <label>decay
+      <input id="genDecayMin" class="short" type="number" step="1" min="0" value="10" />
+      <span class="muted">-</span>
+      <input id="genDecayMax" class="short" type="number" step="1" min="0" value="10" />
+    </label>
+  </div>
+  <div class="row">
+    <label>min charge
+      <input id="genMinChargeMin" class="short" type="number" step="1" value="0" />
+      <span class="muted">-</span>
+      <input id="genMinChargeMax" class="short" type="number" step="1" value="0" />
     </label>
   </div>
   <div class="row">
@@ -282,13 +348,19 @@ class Mp3AppRecorder {
 
 /* ---------- model ---------- */
 class Node {
-  constructor(id, x, y, { output = 1, frequency = 0, threshold = 1 } = {}) {
+  constructor(id, x, y, { output = 1, frequency = 0, threshold = 100, pulse = 100, decay = 10, minCharge = 0 } = {}) {
     this.id = id;
     this.x = x;
     this.y = y;
     this.output = output;         // can be negative
     this.frequency = Math.max(0, frequency);
     this.threshold = threshold;   // numeric
+    this.pulse = Math.max(0, pulse);
+    this.decay = Math.max(0, decay);
+    this.minCharge = minCharge;
+    this.charge = 0;
+    this.lastActivationValue = 0;
+    this.lastActiveTick = null;
     this.activeUntil = 0;         // millis timestamp
   }
 
@@ -296,8 +368,7 @@ class Node {
     return now < this.activeUntil;
   }
 
-  activate(now, { force = false } = {}) {
-    if (!force && this.isActive(now)) return false;
+  activate(now) {
     this.activeUntil = now + ACTIVATION_DURATION;
     return true;
   }
@@ -338,6 +409,10 @@ class Graph {
     this.audioCtx = null;
     this.masterGain = null;
     this.mp3Recorder = null;
+    this.signalTimer = null;
+    this.pendingSignals = [];
+    this.graphTick = 0;
+    this.signalMode = "accumulation";
     this.canvas = null;
     this.fileInput = null;
   }
@@ -429,13 +504,21 @@ class Graph {
   }
 
   clearSignals() {
+    this.stopSignalLoop();
+    this.pendingSignals = [];
+
     for (const id of this.nodeOrder) {
       const n = this.nodes.get(id);
-      if (n) n.activeUntil = 0;
+      if (n) {
+        n.activeUntil = 0;
+        n.charge = 0;
+        n.lastActivationValue = 0;
+      }
     }
   }
 
   clearAll() {
+    this.clearSignals();
     this.nodes.clear();
     this.edges.clear();
     this.nodeOrder = [];
@@ -445,6 +528,7 @@ class Graph {
     this.edgeByPair.clear();
     this.nextNodeId = 1;
     this.nextEdgeId = 1;
+    this.graphTick = 0;
     this.selectedFromNodeId = null;
     this.draggingNodeId = null;
     this.hoveredNodeId = null;
@@ -460,6 +544,11 @@ class Graph {
     if (this.fileInput) this.fileInput.click();
   }
 
+  setSignalMode(mode) {
+    this.signalMode = mode === "classic" ? "classic" : "accumulation";
+    this.clearSignals();
+  }
+
   serialize() {
     return {
       version: 1,
@@ -471,7 +560,10 @@ class Graph {
           x: n.x, y: n.y,
           output: n.output,
           frequency: n.frequency,
-          threshold: n.threshold
+          threshold: n.threshold,
+          pulse: n.pulse,
+          decay: n.decay,
+          minCharge: n.minCharge
         })),
       edges: this.edgeOrder
         .map(id => this.edges.get(id))
@@ -500,7 +592,10 @@ class Graph {
       const n = new Node(id, x, y, {
         output: clampNumber(nd.output, 1),
         frequency: Math.max(0, clampNumber(nd.frequency, 0)),
-        threshold: clampNumber(nd.threshold, 1)
+        threshold: clampNumber(nd.threshold, 100),
+        pulse: Math.max(0, clampNumber(nd.pulse, 100)),
+        decay: Math.max(0, clampNumber(nd.decay, 10)),
+        minCharge: clampNumber(nd.minCharge, 0)
       });
 
       this.nodes.set(id, n);
@@ -618,6 +713,45 @@ class Graph {
     this.inEdges.get(toId).add(id);
   }
 
+  activateNode(nodeId, now, { force = false } = {}) {
+    const n = this.nodes.get(nodeId);
+    if (!n) return;
+
+    if (this.signalMode === "classic" && !force && n.isActive(now)) return;
+
+    n.activate(now);
+
+    n.lastActiveTick = this.graphTick;
+    n.lastActivationValue = this.effectiveThreshold(n);
+    n.charge = 0;
+    this.playTone(n.frequency);
+
+    const outgoing = this.outEdges.get(nodeId);
+    if (!outgoing) return;
+
+    for (const edgeId of outgoing) {
+      if (this.signalMode === "classic") {
+        setTimeout(() => this.onClassicSignalArrive(edgeId), SIGNAL_DELAY);
+      } else {
+        this.pendingSignals.push({ edgeId, value: n.pulse });
+      }
+    }
+    if (this.signalMode !== "classic") this.startSignalLoop();
+  }
+
+  exciteNode(nodeId) {
+    const n = this.nodes.get(nodeId);
+    if (!n) return false;
+    if (this.signalMode === "classic") {
+      this.activateNode(nodeId, millis(), { force: true });
+      return true;
+    }
+
+    n.charge = Math.max(n.charge, this.effectiveThreshold(n));
+    this.startSignalLoop();
+    return true;
+  }
+
   totalActiveInput(targetNodeId, now) {
     const incoming = this.inEdges.get(targetNodeId);
     if (!incoming) return 0;
@@ -632,21 +766,89 @@ class Graph {
     return sum;
   }
 
-  activateNode(nodeId, now, { force = false } = {}) {
-    const n = this.nodes.get(nodeId);
-    if (!n) return;
+  onClassicSignalArrive(edgeId) {
+    const now = millis();
+    const e = this.edges.get(edgeId);
+    if (!e) return;
 
-    const didActivate = n.activate(now, { force });
-    if (!didActivate) return;
+    const src = this.nodes.get(e.fromId);
+    const dst = this.nodes.get(e.toId);
+    if (!src || !dst) return;
+    if (!src.isActive(now)) return;
 
-    this.playTone(n.frequency);
-
-    const outgoing = this.outEdges.get(nodeId);
-    if (!outgoing) return;
-
-    for (const edgeId of outgoing) {
-      setTimeout(() => this.onSignalArrive(edgeId), SIGNAL_DELAY);
+    const input = this.totalActiveInput(dst.id, now);
+    if (input >= dst.threshold) {
+      this.activateNode(dst.id, now, { force: false });
     }
+  }
+
+  startSignalLoop() {
+    if (this.signalTimer) return;
+    this.signalTimer = setInterval(() => this.tickSignals(), SIGNAL_DELAY);
+  }
+
+  stopSignalLoop() {
+    if (!this.signalTimer) return;
+    clearInterval(this.signalTimer);
+    this.signalTimer = null;
+  }
+
+  tickSignals() {
+    this.graphTick += 1;
+    const now = millis();
+    const toActivate = this.nodesAtOrAboveThreshold();
+    for (const nodeId of toActivate) {
+      this.activateNode(nodeId, now);
+    }
+
+    this.decayCharges();
+
+    const arrivals = this.pendingSignals;
+    this.pendingSignals = [];
+
+    const arrivedActivations = new Set();
+    for (const signal of arrivals) {
+      const activatedId = this.applySignal(signal.edgeId, signal.value);
+      if (activatedId) arrivedActivations.add(activatedId);
+    }
+
+    for (const nodeId of arrivedActivations) {
+      this.activateNode(nodeId, now);
+    }
+
+    if (this.pendingSignals.length === 0 && !this.hasStoredCharge()) {
+      this.stopSignalLoop();
+    }
+  }
+
+  nodesAtOrAboveThreshold() {
+    const ids = [];
+    for (const id of this.nodeOrder) {
+      const n = this.nodes.get(id);
+      if (n && n.charge >= this.effectiveThreshold(n)) ids.push(id);
+    }
+    return ids;
+  }
+
+  decayCharges() {
+    for (const id of this.nodeOrder) {
+      const n = this.nodes.get(id);
+      if (!n || n.charge === 0 || n.decay <= 0) continue;
+
+      if (n.charge > 0) {
+        n.charge = Math.max(0, n.charge - n.decay);
+      } else {
+        n.charge = Math.min(0, n.charge + n.decay);
+      }
+    }
+  }
+
+  hasStoredCharge() {
+    for (const id of this.nodeOrder) {
+      const n = this.nodes.get(id);
+      if (n && n.charge !== 0) return true;
+    }
+    return false;
   }
 
   activateRandomNodes(count) {
@@ -659,28 +861,50 @@ class Graph {
       [ids[i], ids[j]] = [ids[j], ids[i]];
     }
 
-    const now = millis();
     for (const id of ids.slice(0, targetCount)) {
-      this.activateNode(id, now, { force: true });
+      this.exciteNode(id);
     }
     return targetCount;
   }
 
-  onSignalArrive(edgeId) {
-    const now = millis();
+  applySignal(edgeId, signalValue) {
     const e = this.edges.get(edgeId);
-    if (!e) return;
+    if (!e) return null;
 
     const src = this.nodes.get(e.fromId);
     const dst = this.nodes.get(e.toId);
-    if (!src || !dst) return;
+    if (!src || !dst) return null;
 
-    if (!src.isActive(now)) return;
+    const direction = Math.sign(src.output);
+    if (direction === 0) return null;
 
-    const input = this.totalActiveInput(dst.id, now);
-    if (input >= dst.threshold) {
-      this.activateNode(dst.id, now, { force: false });
+    dst.charge = Math.max(dst.minCharge, dst.charge + direction * signalValue * e.weight);
+
+    if (dst.charge >= this.effectiveThreshold(dst)) {
+      return dst.id;
     }
+    return null;
+  }
+
+  deleteInactiveNodes(maxAgeTicks) {
+    const maxAge = Math.max(0, Math.floor(clampNumber(maxAgeTicks, 0)));
+    const toDelete = [];
+
+    for (const id of this.nodeOrder) {
+      const n = this.nodes.get(id);
+      if (!n) continue;
+      const outgoing = this.outEdges.get(id);
+      if (!outgoing || outgoing.size === 0) {
+        toDelete.push(id);
+        continue;
+      }
+
+      const last = n.lastActiveTick;
+      if (last === null || this.graphTick - last > maxAge) toDelete.push(id);
+    }
+
+    for (const id of toDelete) this.deleteNode(id);
+    return toDelete.length;
   }
 
   // color helpers
@@ -690,22 +914,41 @@ class Graph {
     return 0;
   }
 
+  chargeRatio(node) {
+    return constrain(node.charge / this.effectiveThreshold(node), 0, 1);
+  }
+
+  displayedCharge(node, now) {
+    if (this.signalMode === "classic") return node.isActive(now) ? this.effectiveThreshold(node) : 0;
+    return node.isActive(now) ? node.lastActivationValue : node.charge;
+  }
+
+  displayedChargeRatio(node, now) {
+    return constrain(this.displayedCharge(node, now) / this.effectiveThreshold(node), 0, 1);
+  }
+
+  effectiveThreshold(node) {
+    return Math.max(0.000001, Math.abs(Number(node.threshold)) || 0);
+  }
+
   nodeFill(node, now) {
-    const active = node.isActive(now);
-    const b = active ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
+    const ratio = this.displayedChargeRatio(node, now);
+    const b = BRIGHT_INACTIVE + (BRIGHT_ACTIVE - BRIGHT_INACTIVE) * ratio;
+    const sat = 30 + (SAT - 30) * ratio;
 
     if (node.output === 0) return color(0, 0, b);
     const h = this.hueForOutput(node.output);
-    return color(h, SAT, b);
+    return color(h, sat, b);
   }
 
   nodeStroke(node, now) {
-    const active = node.isActive(now);
-    const b = active ? Math.max(10, BRIGHT_ACTIVE - 15) : Math.max(10, BRIGHT_INACTIVE - 10);
+    const ratio = this.displayedChargeRatio(node, now);
+    const b = Math.max(10, BRIGHT_INACTIVE - 12 + 35 * ratio);
+    const sat = 35 + (SAT - 35) * ratio;
 
     if (node.output === 0) return color(0, 0, b);
     const h = this.hueForOutput(node.output);
-    return color(h, SAT, b);
+    return color(h, sat, b);
   }
 
   edgeColorFromSource(srcNode, now) {
@@ -720,8 +963,19 @@ class Graph {
   // threshold -> border thickness (restored)
   nodeBorderWidth(node) {
     const t = Math.abs(Number(node.threshold)) || 0;
-    // scale moderately, clamp to avoid ridiculous thickness
-    return constrain(1 + t, 1, 12);
+    if (this.signalMode === "classic") return constrain(1 + t, 1, 12);
+    return constrain(1 + Math.log10(t + 1) * 2, 1, 8);
+  }
+
+  edgeWidth(edge) {
+    const w = Math.abs(Number(edge.weight)) || 1;
+    return constrain(2 + w, 3, 12);
+  }
+
+  formatCharge(value) {
+    const abs = Math.abs(value);
+    if (abs >= 100 || Number.isInteger(value)) return String(Math.round(value));
+    return value.toFixed(1);
   }
 
   updateHover(mx, my) {
@@ -748,8 +1002,9 @@ class Graph {
       if (!fromNode || !toNode) continue;
 
       const c = this.edgeColorFromSource(fromNode, now);
+      const edgeWidth = this.edgeWidth(e);
       stroke(c);
-      strokeWeight(3); // thicker arrows
+      strokeWeight(edgeWidth);
 
       line(fromNode.x, fromNode.y, toNode.x, toNode.y);
 
@@ -761,7 +1016,7 @@ class Graph {
       translate(toNode.x, toNode.y);
       rotate(a);
       stroke(c);
-      strokeWeight(3);
+      strokeWeight(edgeWidth);
       line(0, 0, -14, -7);
       line(0, 0, -14,  7);
       pop();
@@ -776,6 +1031,12 @@ class Graph {
       stroke(this.nodeStroke(n, now));
       strokeWeight(this.nodeBorderWidth(n));
       circle(n.x, n.y, NODE_RADIUS * 2);
+
+      noStroke();
+      fill(0, 0, this.displayedChargeRatio(n, now) > 0.55 ? 10 : 100);
+      textAlign(CENTER, CENTER);
+      textSize(10);
+      text(this.formatCharge(this.displayedCharge(n, now)), n.x, n.y);
 
       if (this.hoveredNodeId === n.id) {
         noFill();
@@ -814,7 +1075,7 @@ class Graph {
         return;
       }
       this.draggingNodeId = n.id;
-      this.activateNode(n.id, millis(), { force: true });
+      this.exciteNode(n.id);
       return;
     }
 
@@ -848,17 +1109,28 @@ class Graph {
 /* ---------- UI binding ---------- */
 const inpOutput = document.getElementById("inpOutput");
 const inpThreshold = document.getElementById("inpThreshold");
+const inpNodePulse = document.getElementById("inpNodePulse");
+const inpNodeDecay = document.getElementById("inpNodeDecay");
+const inpNodeMinCharge = document.getElementById("inpNodeMinCharge");
 const inpFreq = document.getElementById("inpFreq");
 const hoverInfo = document.getElementById("hoverInfo");
 const genInfo = document.getElementById("genInfo");
+const panel = document.getElementById("panel");
+const btnHidePanel = document.getElementById("btnHidePanel");
+const btnShowPanel = document.getElementById("btnShowPanel");
 const btnRecordMp3 = document.getElementById("btnRecordMp3");
 const recordInfo = document.getElementById("recordInfo");
+const inpInactiveTicks = document.getElementById("inpInactiveTicks");
 const inpRandomActivateCount = document.getElementById("inpRandomActivateCount");
+const signalMode = document.getElementById("signalMode");
 
 function readPanelConfig() {
   return {
     output: clampNumber(inpOutput.value, 1),
-    threshold: clampNumber(inpThreshold.value, 1),
+    threshold: Math.max(0, clampNumber(inpThreshold.value, 100)),
+    pulse: Math.max(0, clampNumber(inpNodePulse.value, 100)),
+    decay: Math.max(0, clampNumber(inpNodeDecay.value, 10)),
+    minCharge: clampNumber(inpNodeMinCharge.value, 0),
     frequency: Math.max(0, clampNumber(inpFreq.value, 0))
   };
 }
@@ -879,6 +1151,15 @@ function readGeneratorConfig() {
     weightMax: document.getElementById("genWeightMax").value,
     thresholdMin: document.getElementById("genThresholdMin").value,
     thresholdMax: document.getElementById("genThresholdMax").value,
+    pulseMin: document.getElementById("genPulseMin").value,
+    pulseMax: document.getElementById("genPulseMax").value,
+    decayMin: document.getElementById("genDecayMin").value,
+    decayMax: document.getElementById("genDecayMax").value,
+    minChargeMin: document.getElementById("genMinChargeMin").value,
+    minChargeMax: document.getElementById("genMinChargeMax").value,
+    freqMin: document.getElementById("genFreqMin").value,
+    freqMax: document.getElementById("genFreqMax").value,
+    noTwoCycles: document.getElementById("genNoTwoCycles").checked,
     muteProb: document.getElementById("genMuteProb").value
   };
 }
@@ -900,6 +1181,20 @@ const graph = new Graph();
 function setup() {
   graph.setup();
 
+  btnHidePanel.addEventListener("click", () => {
+    panel.style.display = "none";
+    btnShowPanel.style.display = "block";
+  });
+
+  btnShowPanel.addEventListener("click", () => {
+    panel.style.display = "block";
+    btnShowPanel.style.display = "none";
+  });
+
+  signalMode.addEventListener("change", () => {
+    graph.setSignalMode(signalMode.value);
+  });
+
   document.getElementById("btnSave").addEventListener("click", () => {
     graph.ensureAudio();
     graph.saveToFile();
@@ -918,6 +1213,11 @@ function setup() {
   document.getElementById("btnClear").addEventListener("click", () => {
     graph.ensureAudio();
     graph.clearSignals();
+  });
+
+  document.getElementById("btnDeleteInactive").addEventListener("click", () => {
+    const deleted = graph.deleteInactiveNodes(inpInactiveTicks.value);
+    recordInfo.textContent = `deleted ${deleted}`;
   });
 
   document.getElementById("btnActivateRandom").addEventListener("click", () => {
@@ -969,11 +1269,17 @@ function setup() {
     const cfg = readPanelConfig();
     n.output = cfg.output;
     n.threshold = cfg.threshold;
+    n.pulse = cfg.pulse;
+    n.decay = cfg.decay;
+    n.minCharge = cfg.minCharge;
     n.frequency = cfg.frequency;
   };
 
   inpOutput.addEventListener("input", applyPanelToHoveredNode);
   inpThreshold.addEventListener("input", applyPanelToHoveredNode);
+  inpNodePulse.addEventListener("input", applyPanelToHoveredNode);
+  inpNodeDecay.addEventListener("input", applyPanelToHoveredNode);
+  inpNodeMinCharge.addEventListener("input", applyPanelToHoveredNode);
   inpFreq.addEventListener("input", applyPanelToHoveredNode);
 
   // Delete hovered node
