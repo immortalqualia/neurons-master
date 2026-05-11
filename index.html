@@ -30,19 +30,36 @@
     #panel input[type="number"] { width: 90px; }
     #panel input.short { width: 64px; }
     #panel .muted { color: #666; }
+    #panel .topbar { justify-content: space-between; }
     #panel .sectionTitle { font-weight: 600; margin: 8px 0 6px; }
     #panel .hr { height: 1px; background: #e6e6e6; margin: 8px 0; }
     #panel .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    #btnShowPanel {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 9999;
+      padding: 4px 8px;
+      display: none;
+    }
   </style>
 </head>
 <body>
 
+<button id="btnShowPanel" type="button">Panel</button>
+
 <div id="panel">
+  <div class="row topbar">
+    <span class="sectionTitle">Controls</span>
+    <button id="btnHidePanel" type="button">Hide</button>
+  </div>
   <div class="row">
     <button id="btnSave" type="button">Save</button>
     <button id="btnLoad" type="button">Load</button>
     <button id="btnReset" type="button">Reset</button>
     <button id="btnClear" type="button">Clear signals</button>
+    <input id="inpInactiveTicks" class="short" type="number" step="1" min="0" value="20" />
+    <button id="btnDeleteInactive" type="button">Delete inactive</button>
     <button id="btnRecordMp3" type="button">Record MP3</button>
     <input id="inpRandomActivateCount" class="short" type="number" step="1" min="1" value="1" />
     <button id="btnActivateRandom" type="button">Random node</button>
@@ -108,6 +125,9 @@
     <label>extra
       <input id="genExtraEdges" class="short" type="number" step="1" min="0" value="200" />
     </label>
+    <label>no 2-cycle
+      <input id="genNoTwoCycles" type="checkbox" checked />
+    </label>
   </div>
   <div class="row">
     <label>weight
@@ -117,6 +137,13 @@
     </label>
     <label>mute
       <input id="genMuteProb" class="short" type="number" step="0.05" min="0" max="1" value="0.5" />
+    </label>
+  </div>
+  <div class="row">
+    <label>freq
+      <input id="genFreqMin" class="short" type="number" step="1" min="0" value="110" />
+      <span class="muted">-</span>
+      <input id="genFreqMax" class="short" type="number" step="1" min="0" value="880" />
     </label>
   </div>
   <div class="row">
@@ -289,6 +316,7 @@ class Node {
     this.output = output;         // can be negative
     this.frequency = Math.max(0, frequency);
     this.threshold = threshold;   // numeric
+    this.lastActiveTick = null;
     this.activeUntil = 0;         // millis timestamp
   }
 
@@ -338,6 +366,7 @@ class Graph {
     this.audioCtx = null;
     this.masterGain = null;
     this.mp3Recorder = null;
+    this.graphTick = 0;
     this.canvas = null;
     this.fileInput = null;
   }
@@ -445,6 +474,7 @@ class Graph {
     this.edgeByPair.clear();
     this.nextNodeId = 1;
     this.nextEdgeId = 1;
+    this.graphTick = 0;
     this.selectedFromNodeId = null;
     this.draggingNodeId = null;
     this.hoveredNodeId = null;
@@ -639,6 +669,7 @@ class Graph {
     const didActivate = n.activate(now, { force });
     if (!didActivate) return;
 
+    n.lastActiveTick = this.graphTick;
     this.playTone(n.frequency);
 
     const outgoing = this.outEdges.get(nodeId);
@@ -667,6 +698,7 @@ class Graph {
   }
 
   onSignalArrive(edgeId) {
+    this.graphTick += 1;
     const now = millis();
     const e = this.edges.get(edgeId);
     if (!e) return;
@@ -681,6 +713,28 @@ class Graph {
     if (input >= dst.threshold) {
       this.activateNode(dst.id, now, { force: false });
     }
+  }
+
+  deleteInactiveNodes(maxAgeTicks) {
+    const maxAge = Math.max(0, Math.floor(clampNumber(maxAgeTicks, 0)));
+    const toDelete = [];
+
+    for (const id of this.nodeOrder) {
+      const n = this.nodes.get(id);
+      if (!n) continue;
+
+      const outgoing = this.outEdges.get(id);
+      if (!outgoing || outgoing.size === 0) {
+        toDelete.push(id);
+        continue;
+      }
+
+      const last = n.lastActiveTick;
+      if (last === null || this.graphTick - last > maxAge) toDelete.push(id);
+    }
+
+    for (const id of toDelete) this.deleteNode(id);
+    return toDelete.length;
   }
 
   // color helpers
@@ -851,8 +905,12 @@ const inpThreshold = document.getElementById("inpThreshold");
 const inpFreq = document.getElementById("inpFreq");
 const hoverInfo = document.getElementById("hoverInfo");
 const genInfo = document.getElementById("genInfo");
+const panel = document.getElementById("panel");
+const btnHidePanel = document.getElementById("btnHidePanel");
+const btnShowPanel = document.getElementById("btnShowPanel");
 const btnRecordMp3 = document.getElementById("btnRecordMp3");
 const recordInfo = document.getElementById("recordInfo");
+const inpInactiveTicks = document.getElementById("inpInactiveTicks");
 const inpRandomActivateCount = document.getElementById("inpRandomActivateCount");
 
 function readPanelConfig() {
@@ -879,6 +937,9 @@ function readGeneratorConfig() {
     weightMax: document.getElementById("genWeightMax").value,
     thresholdMin: document.getElementById("genThresholdMin").value,
     thresholdMax: document.getElementById("genThresholdMax").value,
+    freqMin: document.getElementById("genFreqMin").value,
+    freqMax: document.getElementById("genFreqMax").value,
+    noTwoCycles: document.getElementById("genNoTwoCycles").checked,
     muteProb: document.getElementById("genMuteProb").value
   };
 }
@@ -900,6 +961,16 @@ const graph = new Graph();
 function setup() {
   graph.setup();
 
+  btnHidePanel.addEventListener("click", () => {
+    panel.style.display = "none";
+    btnShowPanel.style.display = "block";
+  });
+
+  btnShowPanel.addEventListener("click", () => {
+    panel.style.display = "block";
+    btnShowPanel.style.display = "none";
+  });
+
   document.getElementById("btnSave").addEventListener("click", () => {
     graph.ensureAudio();
     graph.saveToFile();
@@ -918,6 +989,11 @@ function setup() {
   document.getElementById("btnClear").addEventListener("click", () => {
     graph.ensureAudio();
     graph.clearSignals();
+  });
+
+  document.getElementById("btnDeleteInactive").addEventListener("click", () => {
+    const deleted = graph.deleteInactiveNodes(inpInactiveTicks.value);
+    recordInfo.textContent = `deleted ${deleted}`;
   });
 
   document.getElementById("btnActivateRandom").addEventListener("click", () => {
