@@ -58,8 +58,6 @@
     <button id="btnLoad" type="button">Load</button>
     <button id="btnReset" type="button">Reset</button>
     <button id="btnClear" type="button">Clear signals</button>
-    <input id="inpInactiveTicks" class="short" type="number" step="1" min="0" value="20" />
-    <button id="btnDeleteInactive" type="button">Delete inactive</button>
     <button id="btnRecordMp3" type="button">Record MP3</button>
     <input id="inpRandomActivateCount" class="short" type="number" step="1" min="1" value="1" />
     <button id="btnActivateRandom" type="button">Random node</button>
@@ -316,7 +314,6 @@ class Node {
     this.output = output;         // can be negative
     this.frequency = Math.max(0, frequency);
     this.threshold = threshold;   // numeric
-    this.lastActiveTick = null;
     this.activeUntil = 0;         // millis timestamp
   }
 
@@ -366,7 +363,6 @@ class Graph {
     this.audioCtx = null;
     this.masterGain = null;
     this.mp3Recorder = null;
-    this.graphTick = 0;
     this.canvas = null;
     this.fileInput = null;
   }
@@ -474,7 +470,6 @@ class Graph {
     this.edgeByPair.clear();
     this.nextNodeId = 1;
     this.nextEdgeId = 1;
-    this.graphTick = 0;
     this.selectedFromNodeId = null;
     this.draggingNodeId = null;
     this.hoveredNodeId = null;
@@ -669,7 +664,6 @@ class Graph {
     const didActivate = n.activate(now, { force });
     if (!didActivate) return;
 
-    n.lastActiveTick = this.graphTick;
     this.playTone(n.frequency);
 
     const outgoing = this.outEdges.get(nodeId);
@@ -698,7 +692,6 @@ class Graph {
   }
 
   onSignalArrive(edgeId) {
-    this.graphTick += 1;
     const now = millis();
     const e = this.edges.get(edgeId);
     if (!e) return;
@@ -713,28 +706,6 @@ class Graph {
     if (input >= dst.threshold) {
       this.activateNode(dst.id, now, { force: false });
     }
-  }
-
-  deleteInactiveNodes(maxAgeTicks) {
-    const maxAge = Math.max(0, Math.floor(clampNumber(maxAgeTicks, 0)));
-    const toDelete = [];
-
-    for (const id of this.nodeOrder) {
-      const n = this.nodes.get(id);
-      if (!n) continue;
-
-      const outgoing = this.outEdges.get(id);
-      if (!outgoing || outgoing.size === 0) {
-        toDelete.push(id);
-        continue;
-      }
-
-      const last = n.lastActiveTick;
-      if (last === null || this.graphTick - last > maxAge) toDelete.push(id);
-    }
-
-    for (const id of toDelete) this.deleteNode(id);
-    return toDelete.length;
   }
 
   // color helpers
@@ -910,7 +881,6 @@ const btnHidePanel = document.getElementById("btnHidePanel");
 const btnShowPanel = document.getElementById("btnShowPanel");
 const btnRecordMp3 = document.getElementById("btnRecordMp3");
 const recordInfo = document.getElementById("recordInfo");
-const inpInactiveTicks = document.getElementById("inpInactiveTicks");
 const inpRandomActivateCount = document.getElementById("inpRandomActivateCount");
 
 function readPanelConfig() {
@@ -989,11 +959,6 @@ function setup() {
   document.getElementById("btnClear").addEventListener("click", () => {
     graph.ensureAudio();
     graph.clearSignals();
-  });
-
-  document.getElementById("btnDeleteInactive").addEventListener("click", () => {
-    const deleted = graph.deleteInactiveNodes(inpInactiveTicks.value);
-    recordInfo.textContent = `deleted ${deleted}`;
   });
 
   document.getElementById("btnActivateRandom").addEventListener("click", () => {
