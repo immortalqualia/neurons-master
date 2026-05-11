@@ -147,7 +147,7 @@
 /* ---------- constants ---------- */
 const NODE_RADIUS = 10;
 const ACTIVATION_DURATION = 500; // ms
-const SIGNAL_DELAY = 300;        // ms
+const ENGINE_TICK_MS = 300;
 
 // colors (HSB): saturation constant, brightness changes
 const SAT = 85;
@@ -237,6 +237,11 @@ class Graph {
     this.draggingNodeId = null;
     this.hoveredNodeId = null;
 
+    this.tickCount = 0;
+    this.engineTimerId = null;
+    this.activeNodeIds = new Set();
+    this.externalStimulusNodeIds = new Set();
+
     this.audioCtx = null;
     this.canvas = null;
     this.fileInput = null;
@@ -266,6 +271,13 @@ class Graph {
         alert("Failed to load JSON: " + (e && e.message ? e.message : String(e)));
       }
     });
+
+    this.startEngine();
+  }
+
+  startEngine() {
+    if (this.engineTimerId !== null) return;
+    this.engineTimerId = setInterval(() => this.stepEngine(), ENGINE_TICK_MS);
   }
 
   resize() {
@@ -308,6 +320,8 @@ class Graph {
   }
 
   clearSignals() {
+    this.activeNodeIds.clear();
+    this.externalStimulusNodeIds.clear();
     for (const id of this.nodeOrder) {
       const n = this.nodes.get(id);
       if (n) n.activeUntil = 0;
@@ -324,6 +338,9 @@ class Graph {
     this.edgeByPair.clear();
     this.nextNodeId = 1;
     this.nextEdgeId = 1;
+    this.tickCount = 0;
+    this.activeNodeIds.clear();
+    this.externalStimulusNodeIds.clear();
     this.selectedFromNodeId = null;
     this.draggingNodeId = null;
     this.hoveredNodeId = null;
@@ -443,6 +460,8 @@ class Graph {
     this.nodeOrder = this.nodeOrder.filter(id => id !== nodeId);
     this.outEdges.delete(nodeId);
     this.inEdges.delete(nodeId);
+    this.activeNodeIds.delete(nodeId);
+    this.externalStimulusNodeIds.delete(nodeId);
 
     if (this.selectedFromNodeId === nodeId) this.selectedFromNodeId = null;
     if (this.draggingNodeId === nodeId) this.draggingNodeId = null;
@@ -497,51 +516,49 @@ class Graph {
     this.inEdges.get(toId).add(id);
   }
 
-  totalActiveInput(targetNodeId, now) {
-    const incoming = this.inEdges.get(targetNodeId);
-    if (!incoming) return 0;
-
-    let sum = 0;
-    for (const edgeId of incoming) {
-      const e = this.edges.get(edgeId);
-      if (!e) continue;
-      const src = this.nodes.get(e.fromId);
-      if (src && src.isActive(now)) sum += e.weight * src.output;
-    }
-    return sum;
+  requestActivation(nodeId) {
+    if (!this.nodes.has(nodeId)) return;
+    this.externalStimulusNodeIds.add(nodeId);
   }
 
-  activateNode(nodeId, now, { force = false } = {}) {
-    const n = this.nodes.get(nodeId);
-    if (!n) return;
-
-    const didActivate = n.activate(now, { force });
-    if (!didActivate) return;
-
-    this.playTone(n.frequency);
-
-    const outgoing = this.outEdges.get(nodeId);
-    if (!outgoing) return;
-
-    for (const edgeId of outgoing) {
-      setTimeout(() => this.onSignalArrive(edgeId), SIGNAL_DELAY);
-    }
-  }
-
-  onSignalArrive(edgeId) {
+  stepEngine() {
     const now = millis();
-    const e = this.edges.get(edgeId);
-    if (!e) return;
+    const inputByNodeId = new Map();
 
-    const src = this.nodes.get(e.fromId);
-    const dst = this.nodes.get(e.toId);
-    if (!src || !dst) return;
+    for (const fromId of this.activeNodeIds) {
+      const src = this.nodes.get(fromId);
+      if (!src) continue;
 
-    if (!src.isActive(now)) return;
+      const outgoing = this.outEdges.get(fromId);
+      if (!outgoing) continue;
 
-    const input = this.totalActiveInput(dst.id, now);
-    if (input >= dst.threshold) {
-      this.activateNode(dst.id, now, { force: false });
+      for (const edgeId of outgoing) {
+        const e = this.edges.get(edgeId);
+        if (!e || !this.nodes.has(e.toId)) continue;
+        const prev = inputByNodeId.get(e.toId) || 0;
+        inputByNodeId.set(e.toId, prev + e.weight * src.output);
+      }
+    }
+
+    const nextActiveNodeIds = new Set();
+    for (const nodeId of this.externalStimulusNodeIds) {
+      if (this.nodes.has(nodeId)) nextActiveNodeIds.add(nodeId);
+    }
+
+    for (const [nodeId, input] of inputByNodeId) {
+      const n = this.nodes.get(nodeId);
+      if (n && input >= n.threshold) nextActiveNodeIds.add(nodeId);
+    }
+
+    this.externalStimulusNodeIds.clear();
+    this.activeNodeIds = nextActiveNodeIds;
+    this.tickCount += 1;
+
+    for (const nodeId of this.activeNodeIds) {
+      const n = this.nodes.get(nodeId);
+      if (!n) continue;
+      n.activate(now, { force: true });
+      this.playTone(n.frequency);
     }
   }
 
@@ -571,8 +588,7 @@ class Graph {
   }
 
   edgeColorFromSource(srcNode, now) {
-    // exact same "on/off" as source node
-    const b = srcNode.isActive(now) ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
+    const b = this.activeNodeIds.has(srcNode.id) ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
 
     if (srcNode.output === 0) return color(0, 0, b);
     const h = this.hueForOutput(srcNode.output);
@@ -676,7 +692,7 @@ class Graph {
         return;
       }
       this.draggingNodeId = n.id;
-      this.activateNode(n.id, millis(), { force: true });
+      this.requestActivation(n.id);
       return;
     }
 
