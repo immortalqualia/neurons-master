@@ -1,0 +1,358 @@
+{
+  "version": 2,
+  "preset": {
+    "name": "Phase Sieve",
+    "description": "Three silent rings of length 2, 3, and 5 feed threshold gates that compute phase coincidences at 6, 10, 15, and 30 ticks."
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "x": 70,
+      "y": 70,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 2,
+      "x": 185,
+      "y": 165,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 3,
+      "x": 185,
+      "y": 275,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 4,
+      "x": 345,
+      "y": 140,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 5,
+      "x": 425,
+      "y": 235,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 6,
+      "x": 310,
+      "y": 330,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 7,
+      "x": 560,
+      "y": 120,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 8,
+      "x": 685,
+      "y": 185,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 9,
+      "x": 655,
+      "y": 330,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 10,
+      "x": 510,
+      "y": 370,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 11,
+      "x": 465,
+      "y": 235,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 12,
+      "x": 760,
+      "y": 155,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 2
+    },
+    {
+      "id": 13,
+      "x": 760,
+      "y": 275,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 2
+    },
+    {
+      "id": 14,
+      "x": 760,
+      "y": 395,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 2
+    },
+    {
+      "id": 15,
+      "x": 760,
+      "y": 540,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 3
+    },
+    {
+      "id": 16,
+      "x": 860,
+      "y": 145,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 17,
+      "x": 930,
+      "y": 145,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 18,
+      "x": 860,
+      "y": 265,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 19,
+      "x": 930,
+      "y": 265,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 20,
+      "x": 860,
+      "y": 385,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 21,
+      "x": 930,
+      "y": 385,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 22,
+      "x": 850,
+      "y": 525,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 23,
+      "x": 910,
+      "y": 565,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 24,
+      "x": 970,
+      "y": 525,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "fromId": 1,
+      "toId": 2
+    },
+    {
+      "id": 2,
+      "fromId": 2,
+      "toId": 3
+    },
+    {
+      "id": 3,
+      "fromId": 3,
+      "toId": 2
+    },
+    {
+      "id": 4,
+      "fromId": 1,
+      "toId": 4
+    },
+    {
+      "id": 5,
+      "fromId": 4,
+      "toId": 5
+    },
+    {
+      "id": 6,
+      "fromId": 5,
+      "toId": 6
+    },
+    {
+      "id": 7,
+      "fromId": 6,
+      "toId": 4
+    },
+    {
+      "id": 8,
+      "fromId": 1,
+      "toId": 7
+    },
+    {
+      "id": 9,
+      "fromId": 7,
+      "toId": 8
+    },
+    {
+      "id": 10,
+      "fromId": 8,
+      "toId": 9
+    },
+    {
+      "id": 11,
+      "fromId": 9,
+      "toId": 10
+    },
+    {
+      "id": 12,
+      "fromId": 10,
+      "toId": 11
+    },
+    {
+      "id": 13,
+      "fromId": 11,
+      "toId": 7
+    },
+    {
+      "id": 14,
+      "fromId": 3,
+      "toId": 12
+    },
+    {
+      "id": 15,
+      "fromId": 6,
+      "toId": 12
+    },
+    {
+      "id": 16,
+      "fromId": 3,
+      "toId": 13
+    },
+    {
+      "id": 17,
+      "fromId": 11,
+      "toId": 13
+    },
+    {
+      "id": 18,
+      "fromId": 6,
+      "toId": 14
+    },
+    {
+      "id": 19,
+      "fromId": 11,
+      "toId": 14
+    },
+    {
+      "id": 20,
+      "fromId": 3,
+      "toId": 15
+    },
+    {
+      "id": 21,
+      "fromId": 6,
+      "toId": 15
+    },
+    {
+      "id": 22,
+      "fromId": 11,
+      "toId": 15
+    },
+    {
+      "id": 23,
+      "fromId": 12,
+      "toId": 16
+    },
+    {
+      "id": 24,
+      "fromId": 16,
+      "toId": 17
+    },
+    {
+      "id": 25,
+      "fromId": 13,
+      "toId": 18
+    },
+    {
+      "id": 26,
+      "fromId": 18,
+      "toId": 19
+    },
+    {
+      "id": 27,
+      "fromId": 14,
+      "toId": 20
+    },
+    {
+      "id": 28,
+      "fromId": 20,
+      "toId": 21
+    },
+    {
+      "id": 29,
+      "fromId": 15,
+      "toId": 22
+    },
+    {
+      "id": 30,
+      "fromId": 22,
+      "toId": 23
+    },
+    {
+      "id": 31,
+      "fromId": 23,
+      "toId": 24
+    }
+  ]
+}

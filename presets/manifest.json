@@ -13,5 +13,30 @@
     "name": "Glass Ratchet Key",
     "file": "glass-ratchet-key.json",
     "description": "A compact 4/6/9 ratchet with high shimmer and explicit top-left entry."
+  },
+  {
+    "name": "Counter",
+    "file": "counter.json",
+    "description": "A larger threshold counter patch with rows, carry lines, and a reset-like blue inhibit stage."
+  },
+  {
+    "name": "Phase Gate Bloom",
+    "file": "phase-gate-bloom.json",
+    "description": "Two unequal loops only open a bright phrase when their phases meet; a blue pulse briefly shuts the gate after each bloom."
+  },
+  {
+    "name": "Mirror Latch",
+    "file": "mirror-latch.json",
+    "description": "Two mirrored loops feed a threshold latch; blue feedback knocks one side out of phase instead of counting steps."
+  },
+  {
+    "name": "Canon Switcher",
+    "file": "canon-switcher.json",
+    "description": "Three canons share one entry; phase coincidences open a lower phrase while blue gates redirect the long loop."
+  },
+  {
+    "name": "Phase Sieve",
+    "file": "phase-sieve.json",
+    "description": "Three silent rings of length 2, 3, and 5 feed threshold gates that compute phase coincidences at 6, 10, 15, and 30 ticks."
   }
 ]

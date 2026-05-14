@@ -1,0 +1,337 @@
+{
+  "version": 2,
+  "preset": {
+    "name": "Canon Switcher",
+    "description": "Three canons share one entry; phase coincidences open a lower phrase while blue gates redirect the long loop."
+  },
+  "nodes": [
+    {
+      "id": 1,
+      "x": 70,
+      "y": 70,
+      "polarity": 1,
+      "frequency": 220,
+      "threshold": 1
+    },
+    {
+      "id": 2,
+      "x": 190,
+      "y": 120,
+      "polarity": 1,
+      "frequency": 220,
+      "threshold": 1
+    },
+    {
+      "id": 3,
+      "x": 280,
+      "y": 180,
+      "polarity": 1,
+      "frequency": 330,
+      "threshold": 1
+    },
+    {
+      "id": 4,
+      "x": 250,
+      "y": 280,
+      "polarity": 1,
+      "frequency": 440,
+      "threshold": 1
+    },
+    {
+      "id": 5,
+      "x": 150,
+      "y": 260,
+      "polarity": 1,
+      "frequency": 550,
+      "threshold": 1
+    },
+    {
+      "id": 6,
+      "x": 420,
+      "y": 120,
+      "polarity": 1,
+      "frequency": 275,
+      "threshold": 1
+    },
+    {
+      "id": 7,
+      "x": 530,
+      "y": 170,
+      "polarity": 1,
+      "frequency": 385,
+      "threshold": 1
+    },
+    {
+      "id": 8,
+      "x": 560,
+      "y": 280,
+      "polarity": 1,
+      "frequency": 495,
+      "threshold": 1
+    },
+    {
+      "id": 9,
+      "x": 470,
+      "y": 360,
+      "polarity": 1,
+      "frequency": 660,
+      "threshold": 1
+    },
+    {
+      "id": 10,
+      "x": 370,
+      "y": 290,
+      "polarity": 1,
+      "frequency": 770,
+      "threshold": 1
+    },
+    {
+      "id": 11,
+      "x": 700,
+      "y": 130,
+      "polarity": 1,
+      "frequency": 330,
+      "threshold": 1
+    },
+    {
+      "id": 12,
+      "x": 810,
+      "y": 180,
+      "polarity": 1,
+      "frequency": 495,
+      "threshold": 1
+    },
+    {
+      "id": 13,
+      "x": 850,
+      "y": 300,
+      "polarity": 1,
+      "frequency": 660,
+      "threshold": 1
+    },
+    {
+      "id": 14,
+      "x": 770,
+      "y": 410,
+      "polarity": 1,
+      "frequency": 880,
+      "threshold": 1
+    },
+    {
+      "id": 15,
+      "x": 650,
+      "y": 380,
+      "polarity": 1,
+      "frequency": 440,
+      "threshold": 1
+    },
+    {
+      "id": 16,
+      "x": 620,
+      "y": 240,
+      "polarity": 1,
+      "frequency": 550,
+      "threshold": 1
+    },
+    {
+      "id": 17,
+      "x": 500,
+      "y": 500,
+      "polarity": 1,
+      "frequency": 520,
+      "threshold": 2
+    },
+    {
+      "id": 18,
+      "x": 620,
+      "y": 570,
+      "polarity": 1,
+      "frequency": 650,
+      "threshold": 1
+    },
+    {
+      "id": 19,
+      "x": 740,
+      "y": 560,
+      "polarity": 1,
+      "frequency": 780,
+      "threshold": 1
+    },
+    {
+      "id": 20,
+      "x": 860,
+      "y": 515,
+      "polarity": -1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 21,
+      "x": 910,
+      "y": 390,
+      "polarity": 1,
+      "frequency": 990,
+      "threshold": 2
+    },
+    {
+      "id": 22,
+      "x": 940,
+      "y": 260,
+      "polarity": -1,
+      "frequency": 0,
+      "threshold": 1
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "fromId": 1,
+      "toId": 2
+    },
+    {
+      "id": 2,
+      "fromId": 2,
+      "toId": 3
+    },
+    {
+      "id": 3,
+      "fromId": 3,
+      "toId": 4
+    },
+    {
+      "id": 4,
+      "fromId": 4,
+      "toId": 5
+    },
+    {
+      "id": 5,
+      "fromId": 5,
+      "toId": 2
+    },
+    {
+      "id": 6,
+      "fromId": 1,
+      "toId": 6
+    },
+    {
+      "id": 7,
+      "fromId": 6,
+      "toId": 7
+    },
+    {
+      "id": 8,
+      "fromId": 7,
+      "toId": 8
+    },
+    {
+      "id": 9,
+      "fromId": 8,
+      "toId": 9
+    },
+    {
+      "id": 10,
+      "fromId": 9,
+      "toId": 10
+    },
+    {
+      "id": 11,
+      "fromId": 10,
+      "toId": 6
+    },
+    {
+      "id": 12,
+      "fromId": 1,
+      "toId": 11
+    },
+    {
+      "id": 13,
+      "fromId": 11,
+      "toId": 12
+    },
+    {
+      "id": 14,
+      "fromId": 12,
+      "toId": 13
+    },
+    {
+      "id": 15,
+      "fromId": 13,
+      "toId": 14
+    },
+    {
+      "id": 16,
+      "fromId": 14,
+      "toId": 15
+    },
+    {
+      "id": 17,
+      "fromId": 15,
+      "toId": 16
+    },
+    {
+      "id": 18,
+      "fromId": 16,
+      "toId": 11
+    },
+    {
+      "id": 19,
+      "fromId": 4,
+      "toId": 17
+    },
+    {
+      "id": 20,
+      "fromId": 9,
+      "toId": 17
+    },
+    {
+      "id": 21,
+      "fromId": 17,
+      "toId": 18
+    },
+    {
+      "id": 22,
+      "fromId": 18,
+      "toId": 19
+    },
+    {
+      "id": 23,
+      "fromId": 19,
+      "toId": 17
+    },
+    {
+      "id": 24,
+      "fromId": 14,
+      "toId": 20
+    },
+    {
+      "id": 25,
+      "fromId": 20,
+      "toId": 17
+    },
+    {
+      "id": 26,
+      "fromId": 13,
+      "toId": 21
+    },
+    {
+      "id": 27,
+      "fromId": 19,
+      "toId": 21
+    },
+    {
+      "id": 28,
+      "fromId": 21,
+      "toId": 22
+    },
+    {
+      "id": 29,
+      "fromId": 22,
+      "toId": 11
+    },
+    {
+      "id": 30,
+      "fromId": 21,
+      "toId": 6
+    }
+  ]
+}
