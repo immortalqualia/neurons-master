@@ -893,6 +893,7 @@ function loadPresetManifest() {
     ? window.PRESET_LIBRARY.map(normalizePresetEntry).filter(Boolean)
     : [];
   renderPresetOptions(entries, "no presets", entries.length === 0 ? "presets empty" : `${entries.length} presets`);
+  return entries;
 }
 
 function loadSelectedPreset() {
@@ -915,7 +916,11 @@ const graph = new Graph();
 
 function setup() {
   graph.setup();
-  loadPresetManifest();
+  const presetEntries = loadPresetManifest();
+  if (presetEntries.length > 0) {
+    presetSelect.value = presetEntries[0].file;
+    loadSelectedPreset();
+  }
 
   btnToggleGenerator.addEventListener("click", () => {
     const isHidden = generatorBody.style.display === "none";

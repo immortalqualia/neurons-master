@@ -1,5 +1,10 @@
 [
   {
+    "name": "Counter",
+    "file": "counter.json",
+    "description": "A larger threshold counter patch with rows, carry lines, and a reset-like blue inhibit stage."
+  },
+  {
     "name": "Three Engines One Key",
     "file": "three-engines-one-key.json",
     "description": "One top-left trigger starts 3, 5, and 7 step loops with light blue braking."
@@ -13,11 +18,6 @@
     "name": "Glass Ratchet Key",
     "file": "glass-ratchet-key.json",
     "description": "A compact 4/6/9 ratchet with high shimmer and explicit top-left entry."
-  },
-  {
-    "name": "Counter",
-    "file": "counter.json",
-    "description": "A larger threshold counter patch with rows, carry lines, and a reset-like blue inhibit stage."
   },
   {
     "name": "Phase Gate Bloom",
