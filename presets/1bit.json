@@ -1,0 +1,305 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "x": 572,
+      "y": 413,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 2,
+      "x": 690,
+      "y": 422,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 3,
+      "x": 796,
+      "y": 428,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 4,
+      "x": 906,
+      "y": 425,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 5,
+      "x": 1021,
+      "y": 427,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 7,
+      "x": 920,
+      "y": 514,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 9,
+      "x": 954,
+      "y": 356,
+      "polarity": -1,
+      "frequency": 0,
+      "threshold": 2
+    },
+    {
+      "id": 19,
+      "x": 542,
+      "y": 679,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 20,
+      "x": 665,
+      "y": 671,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 21,
+      "x": 792,
+      "y": 673,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 22,
+      "x": 906,
+      "y": 676,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 23,
+      "x": 1056,
+      "y": 679,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 25,
+      "x": 1037,
+      "y": 602,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 26,
+      "x": 892,
+      "y": 628,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 2
+    },
+    {
+      "id": 27,
+      "x": 1162,
+      "y": 690,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 28,
+      "x": 1148,
+      "y": 583,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 29,
+      "x": 789,
+      "y": 562,
+      "polarity": -1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 30,
+      "x": 579,
+      "y": 317,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 31,
+      "x": 404,
+      "y": 676,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 32,
+      "x": 1259,
+      "y": 565,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 33,
+      "x": 1256,
+      "y": 690,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "fromId": 1,
+      "toId": 2
+    },
+    {
+      "id": 2,
+      "fromId": 2,
+      "toId": 3
+    },
+    {
+      "id": 3,
+      "fromId": 4,
+      "toId": 5
+    },
+    {
+      "id": 4,
+      "fromId": 5,
+      "toId": 4
+    },
+    {
+      "id": 5,
+      "fromId": 3,
+      "toId": 4
+    },
+    {
+      "id": 9,
+      "fromId": 4,
+      "toId": 7
+    },
+    {
+      "id": 10,
+      "fromId": 5,
+      "toId": 7
+    },
+    {
+      "id": 13,
+      "fromId": 9,
+      "toId": 4
+    },
+    {
+      "id": 14,
+      "fromId": 9,
+      "toId": 5
+    },
+    {
+      "id": 15,
+      "fromId": 7,
+      "toId": 9
+    },
+    {
+      "id": 16,
+      "fromId": 3,
+      "toId": 9
+    },
+    {
+      "id": 23,
+      "fromId": 19,
+      "toId": 20
+    },
+    {
+      "id": 24,
+      "fromId": 20,
+      "toId": 21
+    },
+    {
+      "id": 25,
+      "fromId": 21,
+      "toId": 22
+    },
+    {
+      "id": 26,
+      "fromId": 22,
+      "toId": 23
+    },
+    {
+      "id": 29,
+      "fromId": 21,
+      "toId": 26
+    },
+    {
+      "id": 30,
+      "fromId": 26,
+      "toId": 25
+    },
+    {
+      "id": 31,
+      "fromId": 7,
+      "toId": 26
+    },
+    {
+      "id": 32,
+      "fromId": 25,
+      "toId": 28
+    },
+    {
+      "id": 33,
+      "fromId": 23,
+      "toId": 27
+    },
+    {
+      "id": 34,
+      "fromId": 7,
+      "toId": 29
+    },
+    {
+      "id": 35,
+      "fromId": 29,
+      "toId": 22
+    },
+    {
+      "id": 36,
+      "fromId": 30,
+      "toId": 1
+    },
+    {
+      "id": 37,
+      "fromId": 31,
+      "toId": 19
+    },
+    {
+      "id": 38,
+      "fromId": 27,
+      "toId": 33
+    },
+    {
+      "id": 39,
+      "fromId": 28,
+      "toId": 32
+    }
+  ]
+}

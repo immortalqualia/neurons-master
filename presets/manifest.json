@@ -5,6 +5,11 @@
     "description": "A larger threshold counter patch with rows, carry lines, and a reset-like blue inhibit stage."
   },
   {
+    "name": "1bit",
+    "file": "1bit.json",
+    "description": "A one-bit memory preset."
+  },
+  {
     "name": "Three Engines One Key",
     "file": "three-engines-one-key.json",
     "description": "One top-left trigger starts 3, 5, and 7 step loops with light blue braking."
