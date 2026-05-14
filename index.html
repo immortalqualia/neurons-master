@@ -44,6 +44,11 @@
     <button id="btnReset" type="button">Reset</button>
     <button id="btnClear" type="button">Clear signals</button>
   </div>
+  <div class="row">
+    <label>tick ms
+      <input id="inpTickMs" class="short" type="number" step="10" min="20" value="300" />
+    </label>
+  </div>
 
   <div class="hr"></div>
 
@@ -165,8 +170,7 @@
 <script>
 /* ---------- constants ---------- */
 const NODE_RADIUS = 10;
-const ENGINE_TICK_MS = 300;
-const TONE_DURATION_MS = ENGINE_TICK_MS;
+const DEFAULT_ENGINE_TICK_MS = 300;
 
 // colors (HSB): saturation constant, brightness changes
 const SAT = 85;
@@ -246,6 +250,7 @@ class Graph {
 
     this.tickCount = 0;
     this.engineTimerId = null;
+    this.tickMs = DEFAULT_ENGINE_TICK_MS;
     this.activeNodeIds = new Set();
     this.externalStimulusNodeIds = new Set();
 
@@ -284,7 +289,25 @@ class Graph {
 
   startEngine() {
     if (this.engineTimerId !== null) return;
-    this.engineTimerId = setInterval(() => this.stepEngine(), ENGINE_TICK_MS);
+    this.engineTimerId = setInterval(() => this.stepEngine(), this.tickMs);
+  }
+
+  stopEngine() {
+    if (this.engineTimerId === null) return;
+    clearInterval(this.engineTimerId);
+    this.engineTimerId = null;
+  }
+
+  setTickMs(value) {
+    const nextTickMs = Math.max(20, Math.trunc(clampNumber(value, DEFAULT_ENGINE_TICK_MS)));
+    if (nextTickMs === this.tickMs) return;
+
+    const wasRunning = this.engineTimerId !== null;
+    this.tickMs = nextTickMs;
+    if (wasRunning) {
+      this.stopEngine();
+      this.startEngine();
+    }
   }
 
   resize() {
@@ -307,7 +330,7 @@ class Graph {
 
     const ctx = this.audioCtx;
     const t0 = ctx.currentTime;
-    const dur = TONE_DURATION_MS / 1000;
+    const dur = this.tickMs / 1000;
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -717,6 +740,7 @@ class Graph {
 const inpThreshold = document.getElementById("inpThreshold");
 const inpFreq = document.getElementById("inpFreq");
 const inpPolarity = document.getElementById("inpPolarity");
+const inpTickMs = document.getElementById("inpTickMs");
 const hoverInfo = document.getElementById("hoverInfo");
 const genInfo = document.getElementById("genInfo");
 const presetSelect = document.getElementById("presetSelect");
@@ -871,6 +895,11 @@ function setup() {
   inpPolarity.addEventListener("input", applyPanelToHoveredNode);
   inpThreshold.addEventListener("input", applyPanelToHoveredNode);
   inpFreq.addEventListener("input", applyPanelToHoveredNode);
+
+  inpTickMs.addEventListener("input", () => {
+    graph.setTickMs(inpTickMs.value);
+    inpTickMs.value = String(graph.tickMs);
+  });
 
   // Delete hovered node
   document.addEventListener("keydown", (e) => {
