@@ -208,6 +208,17 @@ function downloadText(filename, text) {
   URL.revokeObjectURL(url);
 }
 
+function defaultGraphFilename() {
+  const ts = new Date().toISOString().replace(/[:.]/g, "-");
+  return `graph-${ts}.json`;
+}
+
+function ensureJsonFilename(filename) {
+  const clean = String(filename || "").trim();
+  if (!clean) return "";
+  return /\.json$/i.test(clean) ? clean : `${clean}.json`;
+}
+
 function clampNumber(v, def = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : def;
@@ -426,10 +437,31 @@ class Graph {
     this.hoveredNodeId = null;
   }
 
-  saveToFile() {
+  async saveToFile() {
     const payload = JSON.stringify(this.serialize(), null, 2);
-    const ts = new Date().toISOString().replace(/[:.]/g, "-");
-    downloadText(`graph-${ts}.json`, payload);
+    const suggestedName = defaultGraphFilename();
+
+    if (typeof window.showSaveFilePicker === "function") {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName,
+          types: [{
+            description: "Graph JSON",
+            accept: { "application/json": [".json"] }
+          }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(new Blob([payload], { type: "application/json;charset=utf-8" }));
+        await writable.close();
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+    }
+
+    const filename = ensureJsonFilename(prompt("Save graph as", suggestedName));
+    if (!filename) return;
+    downloadText(filename, payload);
   }
 
   requestLoadFromFile() {
@@ -891,9 +923,13 @@ function setup() {
     btnToggleGenerator.textContent = isHidden ? "Hide generator" : "Show generator";
   });
 
-  document.getElementById("btnSave").addEventListener("click", () => {
+  document.getElementById("btnSave").addEventListener("click", async () => {
     graph.ensureAudio();
-    graph.saveToFile();
+    try {
+      await graph.saveToFile();
+    } catch (e) {
+      alert("Failed to save JSON: " + (e && e.message ? e.message : String(e)));
+    }
   });
 
   document.getElementById("btnLoad").addEventListener("click", () => {
