@@ -7,7 +7,7 @@
   <script src="graph-generator.js"></script>
   <script src="presets/presets.js"></script>
   <style>
-    html, body { margin: 0; padding: 0; overflow: hidden; }
+    html, body { margin: 0; padding: 0; overflow: hidden; background: #000; color: #e8e8e8; }
     canvas { display: block; }
 
     #panel {
@@ -15,8 +15,9 @@
       top: 8px;
       right: 8px;
       z-index: 9999;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid #ddd;
+      background: rgba(16,16,18,0.94);
+      border: 1px solid #333;
+      color: #e8e8e8;
       padding: 8px;
       width: 320px;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -24,14 +25,15 @@
       user-select: none;
     }
     #panel .row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
-    #panel button { padding: 4px 8px; }
+    #panel button { padding: 4px 8px; background: #242428; border: 1px solid #444; color: #f0f0f0; }
     #panel label { display: inline-flex; gap: 6px; align-items: center; }
+    #panel input, #panel select { background: #111; border: 1px solid #444; color: #f0f0f0; }
     #panel select { max-width: 140px; }
     #panel input[type="number"] { width: 90px; }
     #panel input.short { width: 64px; }
-    #panel .muted { color: #666; }
+    #panel .muted { color: #aaa; }
     #panel .sectionTitle { font-weight: 600; margin: 8px 0 6px; }
-    #panel .hr { height: 1px; background: #e6e6e6; margin: 8px 0; }
+    #panel .hr { height: 1px; background: #333; margin: 8px 0; }
     #panel .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
   </style>
 </head>
@@ -633,12 +635,10 @@ class Graph {
 
   nodeFill(node) {
     const active = this.activeNodeIds.has(node.id);
-    const h = this.hueForPolarity(node.polarity);
-    if (active) return color(h, SAT, BRIGHT_ACTIVE);
+    const b = active ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
 
-    const mixedSaturation = SAT * 0.5;
-    const mixedBrightness = BRIGHT_INACTIVE + (100 - BRIGHT_INACTIVE) * 0.5;
-    return color(h, mixedSaturation, mixedBrightness);
+    const h = this.hueForPolarity(node.polarity);
+    return color(h, SAT, b);
   }
 
   nodeStroke(node) {
@@ -675,7 +675,7 @@ class Graph {
     const now = millis();
     this.updateHover(mouseX, mouseY);
 
-    background(0, 0, 95);
+    background(0, 0, 0);
 
     // edges
     for (const edgeId of this.edgeOrder) {
@@ -717,7 +717,7 @@ class Graph {
 
       if (this.hoveredNodeId === n.id) {
         noFill();
-        stroke(0, 0, 20);
+        stroke(0, 0, 90);
         strokeWeight(2);
         circle(n.x, n.y, NODE_RADIUS * 2 + 10);
       }
