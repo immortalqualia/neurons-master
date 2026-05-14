@@ -10,6 +10,11 @@
     "description": "A one-bit memory preset."
   },
   {
+    "name": "3bit Ripple Counter",
+    "file": "3bit-ripple-counter.json",
+    "description": "Three 1bit memory cells wired as a binary incrementer: each clock reads bit0, writes it, and ripples carry only when a bit was already 1."
+  },
+  {
     "name": "Three Engines One Key",
     "file": "three-engines-one-key.json",
     "description": "One top-left trigger starts 3, 5, and 7 step loops with light blue braking."
