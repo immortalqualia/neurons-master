@@ -26,8 +26,15 @@
     }
     #panel .row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
     #panel button { padding: 4px 8px; background: #242428; border: 1px solid #444; color: #f0f0f0; }
+    #panel button:hover { background: #33333a; border-color: #666; }
+    #panel button:active { background: #1b1b1f; border-color: #777; }
     #panel label { display: inline-flex; gap: 6px; align-items: center; }
     #panel input, #panel select { background: #111; border: 1px solid #444; color: #f0f0f0; }
+    #panel input:hover, #panel select:hover { background: #18181c; border-color: #666; }
+    #panel input:focus, #panel select:focus, #panel button:focus {
+      outline: 1px solid #777;
+      outline-offset: 1px;
+    }
     #panel select { max-width: 140px; }
     #panel input[type="number"] { width: 90px; }
     #panel input.short { width: 64px; }
