@@ -171,6 +171,8 @@
 /* ---------- constants ---------- */
 const NODE_RADIUS = 10;
 const DEFAULT_ENGINE_TICK_MS = 300;
+const TONE_GAIN = 0.2;
+const TONE_EDGE_MS = 8;
 
 // colors (HSB): saturation constant, brightness changes
 const SAT = 85;
@@ -331,6 +333,22 @@ class Graph {
     const ctx = this.audioCtx;
     const t0 = ctx.currentTime;
     const dur = this.tickMs / 1000;
+    const edgeRatio = Math.min(0.5, TONE_EDGE_MS / this.tickMs);
+    const curveSize = 128;
+    const envelope = new Float32Array(curveSize);
+
+    for (let i = 0; i < curveSize; i++) {
+      const x = i / (curveSize - 1);
+      let level = 1;
+      if (x < edgeRatio) {
+        const p = x / edgeRatio;
+        level = 0.5 - 0.5 * Math.cos(Math.PI * p);
+      } else if (x > 1 - edgeRatio) {
+        const p = (1 - x) / edgeRatio;
+        level = 0.5 - 0.5 * Math.cos(Math.PI * p);
+      }
+      envelope[i] = TONE_GAIN * level;
+    }
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -338,15 +356,14 @@ class Graph {
     osc.type = "sine";
     osc.frequency.setValueAtTime(freqHz, t0);
 
-    gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.setValueCurveAtTime(envelope, t0, dur);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start(t0);
-    osc.stop(t0 + dur + 0.02);
+    osc.stop(t0 + dur + 0.005);
   }
 
   clearSignals() {
