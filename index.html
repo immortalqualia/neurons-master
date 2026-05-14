@@ -171,6 +171,8 @@
 /* ---------- constants ---------- */
 const NODE_RADIUS = 10;
 const DEFAULT_ENGINE_TICK_MS = 300;
+const ENGINE_WAKE_MIN_MS = 4;
+const ENGINE_WAKE_MAX_MS = 25;
 const TONE_GAIN = 0.2;
 const TONE_EDGE_MS = 8;
 
@@ -252,6 +254,8 @@ class Graph {
 
     this.tickCount = 0;
     this.engineTimerId = null;
+    this.engineStartMs = 0;
+    this.engineClockTickCount = 0;
     this.tickMs = DEFAULT_ENGINE_TICK_MS;
     this.activeNodeIds = new Set();
     this.externalStimulusNodeIds = new Set();
@@ -291,7 +295,8 @@ class Graph {
 
   startEngine() {
     if (this.engineTimerId !== null) return;
-    this.engineTimerId = setInterval(() => this.stepEngine(), this.tickMs);
+    this.resetEngineClock();
+    this.engineTimerId = setInterval(() => this.runEngineClock(), this.engineWakeMs());
   }
 
   stopEngine() {
@@ -309,6 +314,28 @@ class Graph {
     if (wasRunning) {
       this.stopEngine();
       this.startEngine();
+    } else {
+      this.resetEngineClock();
+    }
+  }
+
+  engineWakeMs() {
+    return Math.max(ENGINE_WAKE_MIN_MS, Math.min(ENGINE_WAKE_MAX_MS, Math.floor(this.tickMs / 4)));
+  }
+
+  resetEngineClock(now = performance.now()) {
+    this.engineStartMs = now;
+    this.engineClockTickCount = 0;
+  }
+
+  runEngineClock(now = performance.now()) {
+    const dueTickCount = Math.floor((now - this.engineStartMs) / this.tickMs);
+    const stepsToRun = dueTickCount - this.engineClockTickCount;
+    if (stepsToRun <= 0) return;
+
+    for (let i = 0; i < stepsToRun; i++) {
+      this.stepEngine();
+      this.engineClockTickCount += 1;
     }
   }
 
@@ -382,6 +409,7 @@ class Graph {
     this.nextNodeId = 1;
     this.nextEdgeId = 1;
     this.tickCount = 0;
+    this.resetEngineClock();
     this.activeNodeIds.clear();
     this.externalStimulusNodeIds.clear();
     this.selectedFromNodeId = null;
