@@ -633,10 +633,12 @@ class Graph {
 
   nodeFill(node) {
     const active = this.activeNodeIds.has(node.id);
-    const b = active ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
-
     const h = this.hueForPolarity(node.polarity);
-    return color(h, SAT, b);
+    if (active) return color(h, SAT, BRIGHT_ACTIVE);
+
+    const mixedSaturation = SAT * 0.5;
+    const mixedBrightness = BRIGHT_INACTIVE + (100 - BRIGHT_INACTIVE) * 0.5;
+    return color(h, mixedSaturation, mixedBrightness);
   }
 
   nodeStroke(node) {
