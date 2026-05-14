@@ -70,7 +70,7 @@
     const freqMax = Math.max(freqA, freqB);
 
     return {
-      mode: raw.mode === "backbone" ? "backbone" : "random",
+      mode: ["random", "polyrhythm", "backbone"].includes(raw.mode) ? raw.mode : "random",
       seed: raw.seed === "" || raw.seed === null || raw.seed === undefined ? null : toInt(raw.seed, null),
       nodeCount,
       canvasWidth,
@@ -92,10 +92,11 @@
     return Math.round(value * p) / p;
   }
 
-  function addPair(pairs, fromId, toId) {
+  function addPair(pairs, fromId, toId, { avoidReverse = false } = {}) {
     if (fromId === toId) return false;
     const key = `${fromId}->${toId}`;
     if (pairs.has(key)) return false;
+    if (avoidReverse && pairs.has(`${toId}->${fromId}`)) return false;
     pairs.add(key);
     return true;
   }
@@ -126,6 +127,21 @@
       }));
   }
 
+  function makeNodes(rng, opts) {
+    const positiveCount = clamp(Math.round(opts.nodeCount * (1 - opts.blueRatio)), 0, opts.nodeCount);
+    const polarities = [
+      ...Array(positiveCount).fill(1),
+      ...Array(opts.nodeCount - positiveCount).fill(-1)
+    ];
+    rng.shuffle(polarities);
+
+    const nodes = [];
+    for (let id = 1; id <= opts.nodeCount; id++) {
+      nodes.push(makeNode(rng, id, polarities[id - 1], opts));
+    }
+    return nodes;
+  }
+
   function addExtraPairs(rng, pairs, opts) {
     const maxPairs = opts.nodeCount * Math.max(0, opts.nodeCount - 1);
     const targetTotal = Math.min(pairs.size + opts.extraEdges, maxPairs);
@@ -140,17 +156,7 @@
 
   function generateRandom(opts) {
     const rng = makeRng(opts.seed);
-    const positiveCount = clamp(Math.round(opts.nodeCount * (1 - opts.blueRatio)), 0, opts.nodeCount);
-    const polarities = [
-      ...Array(positiveCount).fill(1),
-      ...Array(opts.nodeCount - positiveCount).fill(-1)
-    ];
-    rng.shuffle(polarities);
-
-    const nodes = [];
-    for (let id = 1; id <= opts.nodeCount; id++) {
-      nodes.push(makeNode(rng, id, polarities[id - 1], opts));
-    }
+    const nodes = makeNodes(rng, opts);
 
     const pairs = new Set();
     for (let fromId = 1; fromId <= opts.nodeCount; fromId++) {
@@ -164,6 +170,39 @@
       }
       rng.shuffle(candidates);
       for (const toId of candidates.slice(0, k)) addPair(pairs, fromId, toId);
+    }
+
+    addExtraPairs(rng, pairs, opts);
+    return { version: 2, nodes, edges: buildEdges(rng, pairs, opts) };
+  }
+
+  function generatePolyrhythm(opts) {
+    const rng = makeRng(opts.seed);
+    const nodes = makeNodes(rng, opts);
+    const pairs = new Set();
+    const avoidReverse = { avoidReverse: true };
+
+    for (let fromId = 1; fromId <= opts.nodeCount; fromId++) {
+      const maxPossible = Math.max(0, opts.nodeCount - 1);
+      const minEdges = Math.min(opts.edgesMin, maxPossible);
+      const maxEdges = Math.min(opts.edgesMax, maxPossible);
+      const k = maxEdges <= 0 ? 0 : rng.int(minEdges, maxEdges);
+      const candidates = [];
+      for (let toId = 1; toId <= opts.nodeCount; toId++) {
+        if (toId !== fromId) candidates.push(toId);
+      }
+      rng.shuffle(candidates);
+      for (const toId of candidates.slice(0, k)) addPair(pairs, fromId, toId, avoidReverse);
+    }
+
+    const cycleLengths = [3, 5, 7, 11, 13].filter(len => len <= opts.nodeCount);
+    const cycleCount = cycleLengths.length === 0 ? 0 : Math.max(1, Math.round(opts.nodeCount / 14));
+    for (let i = 0; i < cycleCount; i++) {
+      const len = rng.choice(cycleLengths);
+      const cycle = rng.shuffle(Array.from({ length: opts.nodeCount }, (_, idx) => idx + 1)).slice(0, len);
+      for (let j = 0; j < cycle.length; j++) {
+        addPair(pairs, cycle[j], cycle[(j + 1) % cycle.length], avoidReverse);
+      }
     }
 
     addExtraPairs(rng, pairs, opts);
@@ -216,6 +255,7 @@
 
   function generateGraph(rawOptions) {
     const opts = sanitizeOptions(rawOptions);
+    if (opts.mode === "polyrhythm") return generatePolyrhythm(opts);
     return opts.mode === "backbone" ? generateBackbone(opts) : generateRandom(opts);
   }
 

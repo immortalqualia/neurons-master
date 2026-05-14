@@ -5,6 +5,7 @@
   <title>Signal Graph</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <script src="graph-generator.js"></script>
+  <script src="presets/presets.js"></script>
   <style>
     html, body { margin: 0; padding: 0; overflow: hidden; }
     canvas { display: block; }
@@ -48,6 +49,12 @@
 
   <div class="sectionTitle">Node settings</div>
   <div class="row">
+    <label>color
+      <select id="inpPolarity">
+        <option value="1">red</option>
+        <option value="-1">blue</option>
+      </select>
+    </label>
     <label>threshold
       <input id="inpThreshold" type="number" step="1" value="1" />
     </label>
@@ -66,11 +73,29 @@
 
   <div class="hr"></div>
 
-  <div class="sectionTitle">Generator</div>
+  <div class="sectionTitle">Presets</div>
+  <div class="row">
+    <select id="presetSelect">
+      <option value="">no presets</option>
+    </select>
+    <button id="btnLoadPreset" type="button">Load preset</button>
+  </div>
+  <div class="row">
+    <span id="presetInfo" class="mono muted">presets empty</span>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="row">
+    <span class="sectionTitle">Generator</span>
+    <button id="btnToggleGenerator" type="button">Show generator</button>
+  </div>
+  <div id="generatorBody" style="display: none;">
   <div class="row">
     <label>mode
       <select id="genMode">
         <option value="random">random</option>
+        <option value="polyrhythm">polyrhythm</option>
       </select>
     </label>
   </div>
@@ -123,6 +148,7 @@
   <div class="row">
     <span id="genInfo" class="mono muted">ready</span>
   </div>
+  </div>
 
   <div class="hr"></div>
 
@@ -139,8 +165,8 @@
 <script>
 /* ---------- constants ---------- */
 const NODE_RADIUS = 10;
-const ACTIVATION_DURATION = 500; // ms
 const ENGINE_TICK_MS = 300;
+const TONE_DURATION_MS = 500;
 
 // colors (HSB): saturation constant, brightness changes
 const SAT = 85;
@@ -184,17 +210,6 @@ class Node {
     this.polarity = polarity >= 0 ? 1 : -1;
     this.frequency = Math.max(0, frequency);
     this.threshold = threshold;   // numeric
-    this.activeUntil = 0;         // millis timestamp
-  }
-
-  isActive(now) {
-    return now < this.activeUntil;
-  }
-
-  activate(now, { force = false } = {}) {
-    if (!force && this.isActive(now)) return false;
-    this.activeUntil = now + ACTIVATION_DURATION;
-    return true;
   }
 
   contains(mx, my) {
@@ -292,7 +307,7 @@ class Graph {
 
     const ctx = this.audioCtx;
     const t0 = ctx.currentTime;
-    const dur = ACTIVATION_DURATION / 1000;
+    const dur = TONE_DURATION_MS / 1000;
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -314,10 +329,6 @@ class Graph {
   clearSignals() {
     this.activeNodeIds.clear();
     this.externalStimulusNodeIds.clear();
-    for (const id of this.nodeOrder) {
-      const n = this.nodes.get(id);
-      if (n) n.activeUntil = 0;
-    }
   }
 
   clearAll() {
@@ -494,7 +505,7 @@ class Graph {
     }
 
     const id = this.nextEdgeId++;
-    const e = new Edge(id, fromId, toId, 1);
+    const e = new Edge(id, fromId, toId);
     this.edges.set(id, e);
     this.edgeOrder.push(id);
     this.edgeByPair.set(key, id);
@@ -509,7 +520,6 @@ class Graph {
   }
 
   stepEngine() {
-    const now = millis();
     const inputByNodeId = new Map();
 
     for (const fromId of this.activeNodeIds) {
@@ -544,7 +554,6 @@ class Graph {
     for (const nodeId of this.activeNodeIds) {
       const n = this.nodes.get(nodeId);
       if (!n) continue;
-      n.activate(now, { force: true });
       this.playTone(n.frequency);
     }
   }
@@ -554,23 +563,23 @@ class Graph {
     return polarity >= 0 ? HUE_POS : HUE_NEG;
   }
 
-  nodeFill(node, now) {
-    const active = node.isActive(now);
+  nodeFill(node) {
+    const active = this.activeNodeIds.has(node.id);
     const b = active ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
 
     const h = this.hueForPolarity(node.polarity);
     return color(h, SAT, b);
   }
 
-  nodeStroke(node, now) {
-    const active = node.isActive(now);
+  nodeStroke(node) {
+    const active = this.activeNodeIds.has(node.id);
     const b = active ? Math.max(10, BRIGHT_ACTIVE - 15) : Math.max(10, BRIGHT_INACTIVE - 10);
 
     const h = this.hueForPolarity(node.polarity);
     return color(h, SAT, b);
   }
 
-  edgeColorFromSource(srcNode, now) {
+  edgeColorFromSource(srcNode) {
     const b = this.activeNodeIds.has(srcNode.id) ? BRIGHT_ACTIVE : BRIGHT_INACTIVE;
 
     const h = this.hueForPolarity(srcNode.polarity);
@@ -606,7 +615,7 @@ class Graph {
       const toNode = this.nodes.get(e.toId);
       if (!fromNode || !toNode) continue;
 
-      const c = this.edgeColorFromSource(fromNode, now);
+      const c = this.edgeColorFromSource(fromNode);
       stroke(c);
       strokeWeight(3); // thicker arrows
 
@@ -631,8 +640,8 @@ class Graph {
       const n = this.nodes.get(nodeId);
       if (!n) continue;
 
-      fill(this.nodeFill(n, now));
-      stroke(this.nodeStroke(n, now));
+      fill(this.nodeFill(n));
+      stroke(this.nodeStroke(n));
       strokeWeight(this.nodeBorderWidth(n));
       circle(n.x, n.y, NODE_RADIUS * 2);
 
@@ -707,11 +716,17 @@ class Graph {
 /* ---------- UI binding ---------- */
 const inpThreshold = document.getElementById("inpThreshold");
 const inpFreq = document.getElementById("inpFreq");
+const inpPolarity = document.getElementById("inpPolarity");
 const hoverInfo = document.getElementById("hoverInfo");
 const genInfo = document.getElementById("genInfo");
+const presetSelect = document.getElementById("presetSelect");
+const presetInfo = document.getElementById("presetInfo");
+const generatorBody = document.getElementById("generatorBody");
+const btnToggleGenerator = document.getElementById("btnToggleGenerator");
 
 function readPanelConfig() {
   return {
+    polarity: clampNumber(inpPolarity.value, 1),
     threshold: Math.trunc(clampNumber(inpThreshold.value, 1)),
     frequency: Math.max(0, clampNumber(inpFreq.value, 0))
   };
@@ -736,11 +751,67 @@ function readGeneratorConfig() {
   };
 }
 
+function normalizePresetEntry(entry) {
+  if (typeof entry === "string") {
+    return { name: entry.replace(/\.json$/i, ""), file: entry };
+  }
+  if (!entry || typeof entry !== "object") return null;
+  const file = String(entry.file || "").trim();
+  if (!file) return null;
+  return {
+    name: String(entry.name || file.replace(/\.json$/i, "")),
+    file
+  };
+}
+
+function renderPresetOptions(entries, emptyText, infoText) {
+  presetSelect.innerHTML = "";
+  if (entries.length === 0) {
+    presetSelect.append(new Option(emptyText, ""));
+    presetInfo.textContent = infoText;
+    return;
+  }
+
+  for (const entry of entries) {
+    presetSelect.append(new Option(entry.name, entry.file));
+  }
+  presetInfo.textContent = infoText;
+}
+
+function loadPresetManifest() {
+  const entries = Array.isArray(window.PRESET_LIBRARY)
+    ? window.PRESET_LIBRARY.map(normalizePresetEntry).filter(Boolean)
+    : [];
+  renderPresetOptions(entries, "no presets", entries.length === 0 ? "presets empty" : `${entries.length} presets`);
+}
+
+function loadSelectedPreset() {
+  const file = presetSelect.value;
+  if (!file) {
+    presetInfo.textContent = "no preset selected";
+    return;
+  }
+
+  const preset = (window.PRESET_LIBRARY || []).find(entry => entry && entry.file === file);
+  if (!preset || !preset.graph) throw new Error(`preset not bundled: ${file}`);
+
+  const data = JSON.parse(JSON.stringify(preset.graph));
+  graph.deserialize(data);
+  presetInfo.textContent = `loaded ${file}`;
+}
+
 /* ---------- p5 plumbing ---------- */
 const graph = new Graph();
 
 function setup() {
   graph.setup();
+  loadPresetManifest();
+
+  btnToggleGenerator.addEventListener("click", () => {
+    const isHidden = generatorBody.style.display === "none";
+    generatorBody.style.display = isHidden ? "block" : "none";
+    btnToggleGenerator.textContent = isHidden ? "Hide generator" : "Show generator";
+  });
 
   document.getElementById("btnSave").addEventListener("click", () => {
     graph.ensureAudio();
@@ -760,6 +831,16 @@ function setup() {
   document.getElementById("btnClear").addEventListener("click", () => {
     graph.ensureAudio();
     graph.clearSignals();
+  });
+
+  document.getElementById("btnLoadPreset").addEventListener("click", () => {
+    graph.ensureAudio();
+    try {
+      loadSelectedPreset();
+    } catch (e) {
+      presetInfo.textContent = "preset load failed";
+      alert("Failed to load preset: " + (e && e.message ? e.message : String(e)));
+    }
   });
 
   document.getElementById("btnGenerate").addEventListener("click", () => {
@@ -782,10 +863,12 @@ function setup() {
     if (!n) return;
 
     const cfg = readPanelConfig();
+    n.polarity = cfg.polarity >= 0 ? 1 : -1;
     n.threshold = cfg.threshold;
     n.frequency = cfg.frequency;
   };
 
+  inpPolarity.addEventListener("input", applyPanelToHoveredNode);
   inpThreshold.addEventListener("input", applyPanelToHoveredNode);
   inpFreq.addEventListener("input", applyPanelToHoveredNode);
 
