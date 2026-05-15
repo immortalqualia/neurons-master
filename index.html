@@ -629,7 +629,8 @@ class Graph {
   }
 
   stepEngine() {
-    const inputByNodeId = new Map();
+    const redInputByNodeId = new Map();
+    const inhibitedNodeIds = new Set();
 
     for (const fromId of this.activeNodeIds) {
       const src = this.nodes.get(fromId);
@@ -641,19 +642,23 @@ class Graph {
       for (const edgeId of forward) {
         const e = this.edges.get(edgeId);
         if (!e || !this.nodes.has(e.toId)) continue;
-        const prev = inputByNodeId.get(e.toId) || 0;
-        inputByNodeId.set(e.toId, prev + src.polarity);
+        if (src.polarity < 0) {
+          inhibitedNodeIds.add(e.toId);
+        } else {
+          const prev = redInputByNodeId.get(e.toId) || 0;
+          redInputByNodeId.set(e.toId, prev + 1);
+        }
       }
     }
 
     const nextActiveNodeIds = new Set();
     for (const nodeId of this.externalStimulusNodeIds) {
-      if (this.nodes.has(nodeId)) nextActiveNodeIds.add(nodeId);
+      if (this.nodes.has(nodeId) && !inhibitedNodeIds.has(nodeId)) nextActiveNodeIds.add(nodeId);
     }
 
-    for (const [nodeId, input] of inputByNodeId) {
+    for (const [nodeId, input] of redInputByNodeId) {
       const n = this.nodes.get(nodeId);
-      if (n && input >= n.threshold) nextActiveNodeIds.add(nodeId);
+      if (n && !inhibitedNodeIds.has(nodeId) && input >= n.threshold) nextActiveNodeIds.add(nodeId);
     }
 
     this.externalStimulusNodeIds.clear();
