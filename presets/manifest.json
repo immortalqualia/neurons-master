@@ -30,11 +30,6 @@
     "description": "Imported graph preset."
   },
   {
-    "name": "Prime Drift Manual",
-    "file": "prime-drift-manual.json",
-    "description": "5, 7, and 8 step circuits tuned in separated registers, started from one key node."
-  },
-  {
     "name": "Two Systems",
     "file": "twoSystems.json",
     "description": "Imported graph preset."
@@ -50,29 +45,14 @@
     "description": "Imported graph preset."
   },
   {
-    "name": "Phase Gate Bloom",
-    "file": "phase-gate-bloom.json",
-    "description": "Two unequal loops only open a bright phrase when their phases meet; a blue pulse briefly shuts the gate after each bloom."
-  },
-  {
     "name": "Mucic",
     "file": "mucic.json",
     "description": "Imported graph preset."
   },
   {
-    "name": "Mirror Latch",
-    "file": "mirror-latch.json",
-    "description": "Two mirrored loops feed a threshold latch; blue feedback knocks one side out of phase instead of counting steps."
-  },
-  {
     "name": "Song",
     "file": "song.json",
     "description": "Imported graph preset."
-  },
-  {
-    "name": "Canon Switcher",
-    "file": "canon-switcher.json",
-    "description": "Three canons share one entry; phase coincidences open a lower phrase while blue gates redirect the long loop."
   },
   {
     "name": "Phase Sieve",
