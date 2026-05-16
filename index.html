@@ -50,8 +50,8 @@
   <div class="row">
     <button id="btnSave" type="button">Save</button>
     <button id="btnLoad" type="button">Load</button>
-    <button id="btnReset" type="button">Reset</button>
-    <button id="btnClear" type="button">Clear signals</button>
+    <button id="btnReset" type="button">Empty graph</button>
+    <button id="btnClear" type="button">Stop signals</button>
   </div>
   <div class="row">
     <label>tick ms
@@ -172,7 +172,7 @@
     • <b>Click node</b>: activate + drag<br/>
     • <b>Shift + click node</b>, then release on another node: create/increase edge<br/>
     • <b>Hover node + Delete</b>: delete node<br/>
-    • <b>Clear signals</b>: reset activity everywhere
+    • <b>Stop signals</b>: reset activity everywhere
   </div>
 </div>
 
@@ -949,7 +949,7 @@ function setup() {
 
   document.getElementById("btnReset").addEventListener("click", () => {
     graph.ensureAudio();
-    if (confirm("Reset graph (delete all nodes/edges)?")) graph.clearAll();
+    if (confirm("Empty graph (delete all nodes/edges)?")) graph.clearAll();
   });
 
   document.getElementById("btnClear").addEventListener("click", () => {
