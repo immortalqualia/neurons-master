@@ -9,7 +9,7 @@ Signal Graph is somewhere between a cellular automaton, a threshold logic networ
 GitHub Pages:
 
 ```text
-https://YOUR_USERNAME.github.io/YOUR_REPO/
+https://immortalqualia.github.io/neurons-master/
 ```
 
 ## Core Rules
