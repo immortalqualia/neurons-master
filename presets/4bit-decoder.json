@@ -2,7 +2,7 @@
   "version": 2,
   "preset": {
     "name": "4bit Decimal Display",
-    "description": "Four 1bit memory cells decode a 4-bit value into two decimal bar columns: tens on the left, ones on the right."
+    "description": "Four 1bit memory cells decode a 4-bit value into persistent decimal bar columns. Decode clears the previous display, then latches tens on the left and ones on the right."
   },
   "nodes": [
     {
@@ -846,16 +846,16 @@
       "threshold": 4
     },
     {
-      "id": 801,
-      "x": 900,
-      "y": 142,
-      "polarity": 1,
+      "id": 790,
+      "x": 830,
+      "y": 70,
+      "polarity": -1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 821,
-      "x": 990,
+      "id": 801,
+      "x": 895,
       "y": 142,
       "polarity": 1,
       "frequency": 0,
@@ -863,127 +863,279 @@
     },
     {
       "id": 802,
-      "x": 900,
-      "y": 184,
+      "x": 919,
+      "y": 142,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 822,
-      "x": 990,
-      "y": 184,
+      "id": 841,
+      "x": 985,
+      "y": 142,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 842,
+      "x": 1009,
+      "y": 142,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
       "id": 803,
-      "x": 900,
-      "y": 226,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
-      "id": 823,
-      "x": 990,
-      "y": 226,
+      "x": 895,
+      "y": 184,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
       "id": 804,
-      "x": 900,
-      "y": 268,
+      "x": 919,
+      "y": 184,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 824,
-      "x": 990,
-      "y": 268,
+      "id": 843,
+      "x": 985,
+      "y": 184,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 844,
+      "x": 1009,
+      "y": 184,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
       "id": 805,
-      "x": 900,
-      "y": 310,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
-      "id": 825,
-      "x": 990,
-      "y": 310,
+      "x": 895,
+      "y": 226,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
       "id": 806,
-      "x": 900,
-      "y": 352,
+      "x": 919,
+      "y": 226,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 826,
-      "x": 990,
-      "y": 352,
+      "id": 845,
+      "x": 985,
+      "y": 226,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 846,
+      "x": 1009,
+      "y": 226,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
       "id": 807,
-      "x": 900,
-      "y": 394,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
-      "id": 827,
-      "x": 990,
-      "y": 394,
+      "x": 895,
+      "y": 268,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
       "id": 808,
-      "x": 900,
-      "y": 436,
+      "x": 919,
+      "y": 268,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 828,
-      "x": 990,
-      "y": 436,
+      "id": 847,
+      "x": 985,
+      "y": 268,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 848,
+      "x": 1009,
+      "y": 268,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
       "id": 809,
-      "x": 900,
+      "x": 895,
+      "y": 310,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 810,
+      "x": 919,
+      "y": 310,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 849,
+      "x": 985,
+      "y": 310,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 850,
+      "x": 1009,
+      "y": 310,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 811,
+      "x": 895,
+      "y": 352,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 812,
+      "x": 919,
+      "y": 352,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 851,
+      "x": 985,
+      "y": 352,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 852,
+      "x": 1009,
+      "y": 352,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 813,
+      "x": 895,
+      "y": 394,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 814,
+      "x": 919,
+      "y": 394,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 853,
+      "x": 985,
+      "y": 394,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 854,
+      "x": 1009,
+      "y": 394,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 815,
+      "x": 895,
+      "y": 436,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 816,
+      "x": 919,
+      "y": 436,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 855,
+      "x": 985,
+      "y": 436,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 856,
+      "x": 1009,
+      "y": 436,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 817,
+      "x": 895,
       "y": 478,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 829,
-      "x": 990,
+      "id": 818,
+      "x": 919,
+      "y": 478,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 857,
+      "x": 985,
+      "y": 478,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 858,
+      "x": 1009,
       "y": 478,
       "polarity": 1,
       "frequency": 0,
@@ -1873,333 +2025,698 @@
     },
     {
       "id": 193,
-      "fromId": 501,
-      "toId": 821
+      "fromId": 1,
+      "toId": 790
     },
     {
       "id": 194,
-      "fromId": 502,
-      "toId": 821
+      "fromId": 801,
+      "toId": 802
     },
     {
       "id": 195,
-      "fromId": 502,
-      "toId": 822
+      "fromId": 802,
+      "toId": 801
     },
     {
       "id": 196,
-      "fromId": 503,
-      "toId": 821
+      "fromId": 790,
+      "toId": 801
     },
     {
       "id": 197,
-      "fromId": 503,
-      "toId": 822
+      "fromId": 790,
+      "toId": 802
     },
     {
       "id": 198,
-      "fromId": 503,
-      "toId": 823
+      "fromId": 841,
+      "toId": 842
     },
     {
       "id": 199,
-      "fromId": 504,
-      "toId": 821
+      "fromId": 842,
+      "toId": 841
     },
     {
       "id": 200,
-      "fromId": 504,
-      "toId": 822
+      "fromId": 790,
+      "toId": 841
     },
     {
       "id": 201,
-      "fromId": 504,
-      "toId": 823
+      "fromId": 790,
+      "toId": 842
     },
     {
       "id": 202,
-      "fromId": 504,
-      "toId": 824
+      "fromId": 803,
+      "toId": 804
     },
     {
       "id": 203,
-      "fromId": 505,
-      "toId": 821
+      "fromId": 804,
+      "toId": 803
     },
     {
       "id": 204,
-      "fromId": 505,
-      "toId": 822
+      "fromId": 790,
+      "toId": 803
     },
     {
       "id": 205,
-      "fromId": 505,
-      "toId": 823
+      "fromId": 790,
+      "toId": 804
     },
     {
       "id": 206,
-      "fromId": 505,
-      "toId": 824
+      "fromId": 843,
+      "toId": 844
     },
     {
       "id": 207,
-      "fromId": 505,
-      "toId": 825
+      "fromId": 844,
+      "toId": 843
     },
     {
       "id": 208,
-      "fromId": 506,
-      "toId": 821
+      "fromId": 790,
+      "toId": 843
     },
     {
       "id": 209,
-      "fromId": 506,
-      "toId": 822
+      "fromId": 790,
+      "toId": 844
     },
     {
       "id": 210,
-      "fromId": 506,
-      "toId": 823
+      "fromId": 805,
+      "toId": 806
     },
     {
       "id": 211,
-      "fromId": 506,
-      "toId": 824
+      "fromId": 806,
+      "toId": 805
     },
     {
       "id": 212,
-      "fromId": 506,
-      "toId": 825
+      "fromId": 790,
+      "toId": 805
     },
     {
       "id": 213,
-      "fromId": 506,
-      "toId": 826
+      "fromId": 790,
+      "toId": 806
     },
     {
       "id": 214,
-      "fromId": 507,
-      "toId": 821
+      "fromId": 845,
+      "toId": 846
     },
     {
       "id": 215,
-      "fromId": 507,
-      "toId": 822
+      "fromId": 846,
+      "toId": 845
     },
     {
       "id": 216,
-      "fromId": 507,
-      "toId": 823
+      "fromId": 790,
+      "toId": 845
     },
     {
       "id": 217,
-      "fromId": 507,
-      "toId": 824
+      "fromId": 790,
+      "toId": 846
     },
     {
       "id": 218,
-      "fromId": 507,
-      "toId": 825
+      "fromId": 807,
+      "toId": 808
     },
     {
       "id": 219,
-      "fromId": 507,
-      "toId": 826
+      "fromId": 808,
+      "toId": 807
     },
     {
       "id": 220,
-      "fromId": 507,
-      "toId": 827
+      "fromId": 790,
+      "toId": 807
     },
     {
       "id": 221,
-      "fromId": 508,
-      "toId": 821
+      "fromId": 790,
+      "toId": 808
     },
     {
       "id": 222,
-      "fromId": 508,
-      "toId": 822
+      "fromId": 847,
+      "toId": 848
     },
     {
       "id": 223,
-      "fromId": 508,
-      "toId": 823
+      "fromId": 848,
+      "toId": 847
     },
     {
       "id": 224,
-      "fromId": 508,
-      "toId": 824
+      "fromId": 790,
+      "toId": 847
     },
     {
       "id": 225,
-      "fromId": 508,
-      "toId": 825
+      "fromId": 790,
+      "toId": 848
     },
     {
       "id": 226,
-      "fromId": 508,
-      "toId": 826
+      "fromId": 809,
+      "toId": 810
     },
     {
       "id": 227,
-      "fromId": 508,
-      "toId": 827
+      "fromId": 810,
+      "toId": 809
     },
     {
       "id": 228,
-      "fromId": 508,
-      "toId": 828
+      "fromId": 790,
+      "toId": 809
     },
     {
       "id": 229,
-      "fromId": 509,
-      "toId": 821
+      "fromId": 790,
+      "toId": 810
     },
     {
       "id": 230,
-      "fromId": 509,
-      "toId": 822
+      "fromId": 849,
+      "toId": 850
     },
     {
       "id": 231,
-      "fromId": 509,
-      "toId": 823
+      "fromId": 850,
+      "toId": 849
     },
     {
       "id": 232,
-      "fromId": 509,
-      "toId": 824
+      "fromId": 790,
+      "toId": 849
     },
     {
       "id": 233,
-      "fromId": 509,
-      "toId": 825
+      "fromId": 790,
+      "toId": 850
     },
     {
       "id": 234,
-      "fromId": 509,
-      "toId": 826
+      "fromId": 811,
+      "toId": 812
     },
     {
       "id": 235,
-      "fromId": 509,
-      "toId": 827
+      "fromId": 812,
+      "toId": 811
     },
     {
       "id": 236,
-      "fromId": 509,
-      "toId": 828
+      "fromId": 790,
+      "toId": 811
     },
     {
       "id": 237,
-      "fromId": 509,
-      "toId": 829
+      "fromId": 790,
+      "toId": 812
     },
     {
       "id": 238,
+      "fromId": 851,
+      "toId": 852
+    },
+    {
+      "id": 239,
+      "fromId": 852,
+      "toId": 851
+    },
+    {
+      "id": 240,
+      "fromId": 790,
+      "toId": 851
+    },
+    {
+      "id": 241,
+      "fromId": 790,
+      "toId": 852
+    },
+    {
+      "id": 242,
+      "fromId": 813,
+      "toId": 814
+    },
+    {
+      "id": 243,
+      "fromId": 814,
+      "toId": 813
+    },
+    {
+      "id": 244,
+      "fromId": 790,
+      "toId": 813
+    },
+    {
+      "id": 245,
+      "fromId": 790,
+      "toId": 814
+    },
+    {
+      "id": 246,
+      "fromId": 853,
+      "toId": 854
+    },
+    {
+      "id": 247,
+      "fromId": 854,
+      "toId": 853
+    },
+    {
+      "id": 248,
+      "fromId": 790,
+      "toId": 853
+    },
+    {
+      "id": 249,
+      "fromId": 790,
+      "toId": 854
+    },
+    {
+      "id": 250,
+      "fromId": 815,
+      "toId": 816
+    },
+    {
+      "id": 251,
+      "fromId": 816,
+      "toId": 815
+    },
+    {
+      "id": 252,
+      "fromId": 790,
+      "toId": 815
+    },
+    {
+      "id": 253,
+      "fromId": 790,
+      "toId": 816
+    },
+    {
+      "id": 254,
+      "fromId": 855,
+      "toId": 856
+    },
+    {
+      "id": 255,
+      "fromId": 856,
+      "toId": 855
+    },
+    {
+      "id": 256,
+      "fromId": 790,
+      "toId": 855
+    },
+    {
+      "id": 257,
+      "fromId": 790,
+      "toId": 856
+    },
+    {
+      "id": 258,
+      "fromId": 817,
+      "toId": 818
+    },
+    {
+      "id": 259,
+      "fromId": 818,
+      "toId": 817
+    },
+    {
+      "id": 260,
+      "fromId": 790,
+      "toId": 817
+    },
+    {
+      "id": 261,
+      "fromId": 790,
+      "toId": 818
+    },
+    {
+      "id": 262,
+      "fromId": 857,
+      "toId": 858
+    },
+    {
+      "id": 263,
+      "fromId": 858,
+      "toId": 857
+    },
+    {
+      "id": 264,
+      "fromId": 790,
+      "toId": 857
+    },
+    {
+      "id": 265,
+      "fromId": 790,
+      "toId": 858
+    },
+    {
+      "id": 266,
+      "fromId": 501,
+      "toId": 841
+    },
+    {
+      "id": 267,
+      "fromId": 502,
+      "toId": 841
+    },
+    {
+      "id": 268,
+      "fromId": 502,
+      "toId": 843
+    },
+    {
+      "id": 269,
+      "fromId": 503,
+      "toId": 841
+    },
+    {
+      "id": 270,
+      "fromId": 503,
+      "toId": 843
+    },
+    {
+      "id": 271,
+      "fromId": 503,
+      "toId": 845
+    },
+    {
+      "id": 272,
+      "fromId": 504,
+      "toId": 841
+    },
+    {
+      "id": 273,
+      "fromId": 504,
+      "toId": 843
+    },
+    {
+      "id": 274,
+      "fromId": 504,
+      "toId": 845
+    },
+    {
+      "id": 275,
+      "fromId": 504,
+      "toId": 847
+    },
+    {
+      "id": 276,
+      "fromId": 505,
+      "toId": 841
+    },
+    {
+      "id": 277,
+      "fromId": 505,
+      "toId": 843
+    },
+    {
+      "id": 278,
+      "fromId": 505,
+      "toId": 845
+    },
+    {
+      "id": 279,
+      "fromId": 505,
+      "toId": 847
+    },
+    {
+      "id": 280,
+      "fromId": 505,
+      "toId": 849
+    },
+    {
+      "id": 281,
+      "fromId": 506,
+      "toId": 841
+    },
+    {
+      "id": 282,
+      "fromId": 506,
+      "toId": 843
+    },
+    {
+      "id": 283,
+      "fromId": 506,
+      "toId": 845
+    },
+    {
+      "id": 284,
+      "fromId": 506,
+      "toId": 847
+    },
+    {
+      "id": 285,
+      "fromId": 506,
+      "toId": 849
+    },
+    {
+      "id": 286,
+      "fromId": 506,
+      "toId": 851
+    },
+    {
+      "id": 287,
+      "fromId": 507,
+      "toId": 841
+    },
+    {
+      "id": 288,
+      "fromId": 507,
+      "toId": 843
+    },
+    {
+      "id": 289,
+      "fromId": 507,
+      "toId": 845
+    },
+    {
+      "id": 290,
+      "fromId": 507,
+      "toId": 847
+    },
+    {
+      "id": 291,
+      "fromId": 507,
+      "toId": 849
+    },
+    {
+      "id": 292,
+      "fromId": 507,
+      "toId": 851
+    },
+    {
+      "id": 293,
+      "fromId": 507,
+      "toId": 853
+    },
+    {
+      "id": 294,
+      "fromId": 508,
+      "toId": 841
+    },
+    {
+      "id": 295,
+      "fromId": 508,
+      "toId": 843
+    },
+    {
+      "id": 296,
+      "fromId": 508,
+      "toId": 845
+    },
+    {
+      "id": 297,
+      "fromId": 508,
+      "toId": 847
+    },
+    {
+      "id": 298,
+      "fromId": 508,
+      "toId": 849
+    },
+    {
+      "id": 299,
+      "fromId": 508,
+      "toId": 851
+    },
+    {
+      "id": 300,
+      "fromId": 508,
+      "toId": 853
+    },
+    {
+      "id": 301,
+      "fromId": 508,
+      "toId": 855
+    },
+    {
+      "id": 302,
+      "fromId": 509,
+      "toId": 841
+    },
+    {
+      "id": 303,
+      "fromId": 509,
+      "toId": 843
+    },
+    {
+      "id": 304,
+      "fromId": 509,
+      "toId": 845
+    },
+    {
+      "id": 305,
+      "fromId": 509,
+      "toId": 847
+    },
+    {
+      "id": 306,
+      "fromId": 509,
+      "toId": 849
+    },
+    {
+      "id": 307,
+      "fromId": 509,
+      "toId": 851
+    },
+    {
+      "id": 308,
+      "fromId": 509,
+      "toId": 853
+    },
+    {
+      "id": 309,
+      "fromId": 509,
+      "toId": 855
+    },
+    {
+      "id": 310,
+      "fromId": 509,
+      "toId": 857
+    },
+    {
+      "id": 311,
       "fromId": 510,
       "toId": 801
     },
     {
-      "id": 239,
+      "id": 312,
       "fromId": 511,
       "toId": 801
     },
     {
-      "id": 240,
+      "id": 313,
       "fromId": 511,
-      "toId": 821
+      "toId": 841
     },
     {
-      "id": 241,
+      "id": 314,
       "fromId": 512,
       "toId": 801
     },
     {
-      "id": 242,
+      "id": 315,
       "fromId": 512,
-      "toId": 821
+      "toId": 841
     },
     {
-      "id": 243,
+      "id": 316,
       "fromId": 512,
-      "toId": 822
+      "toId": 843
     },
     {
-      "id": 244,
+      "id": 317,
       "fromId": 513,
       "toId": 801
     },
     {
-      "id": 245,
+      "id": 318,
       "fromId": 513,
-      "toId": 821
+      "toId": 841
     },
     {
-      "id": 246,
+      "id": 319,
       "fromId": 513,
-      "toId": 822
+      "toId": 843
     },
     {
-      "id": 247,
+      "id": 320,
       "fromId": 513,
-      "toId": 823
+      "toId": 845
     },
     {
-      "id": 248,
+      "id": 321,
       "fromId": 514,
       "toId": 801
     },
     {
-      "id": 249,
+      "id": 322,
       "fromId": 514,
-      "toId": 821
+      "toId": 841
     },
     {
-      "id": 250,
+      "id": 323,
       "fromId": 514,
-      "toId": 822
+      "toId": 843
     },
     {
-      "id": 251,
+      "id": 324,
       "fromId": 514,
-      "toId": 823
+      "toId": 845
     },
     {
-      "id": 252,
+      "id": 325,
       "fromId": 514,
-      "toId": 824
+      "toId": 847
     },
     {
-      "id": 253,
+      "id": 326,
       "fromId": 515,
       "toId": 801
     },
     {
-      "id": 254,
+      "id": 327,
       "fromId": 515,
-      "toId": 821
+      "toId": 841
     },
     {
-      "id": 255,
+      "id": 328,
       "fromId": 515,
-      "toId": 822
+      "toId": 843
     },
     {
-      "id": 256,
+      "id": 329,
       "fromId": 515,
-      "toId": 823
+      "toId": 845
     },
     {
-      "id": 257,
+      "id": 330,
       "fromId": 515,
-      "toId": 824
+      "toId": 847
     },
     {
-      "id": 258,
+      "id": 331,
       "fromId": 515,
-      "toId": 825
+      "toId": 849
     }
   ]
 }
