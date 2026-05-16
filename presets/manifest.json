@@ -25,6 +25,11 @@
     "description": "Four 1bit memory cells decode a 4-bit value into persistent decimal bar columns. Decode clears the previous display, then latches tens on the left and ones on the right."
   },
   {
+    "name": "Prime Weave Matrix",
+    "file": "prime-weave-matrix.json",
+    "description": "One top-left trigger starts four phase rings. A large right-side matrix lights only when selected phases from different rings coincide, producing a woven non-counter pattern."
+  },
+  {
     "name": "Star",
     "file": "star.json",
     "description": "Imported graph preset."
