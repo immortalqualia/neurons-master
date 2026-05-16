@@ -1,0 +1,228 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "x": 297,
+      "y": 307,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 2,
+      "x": 548,
+      "y": 339,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 2
+    },
+    {
+      "id": 3,
+      "x": 318,
+      "y": 420,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 4,
+      "x": 745,
+      "y": 349,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 6,
+      "x": 405,
+      "y": 233,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 9
+    },
+    {
+      "id": 7,
+      "x": 345,
+      "y": 588,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 9
+    },
+    {
+      "id": 8,
+      "x": 528,
+      "y": 663,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 11,
+      "x": 794,
+      "y": 661,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 12,
+      "x": 343,
+      "y": 707,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 9
+    },
+    {
+      "id": 17,
+      "x": 1173,
+      "y": 395,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 20,
+      "x": 1189,
+      "y": 346,
+      "polarity": -1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 21,
+      "x": 1343,
+      "y": 397,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 23,
+      "x": 980,
+      "y": 401,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 24,
+      "x": 1085,
+      "y": 394,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 25,
+      "x": 1458,
+      "y": 404,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 27,
+      "x": 1044,
+      "y": 241,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 9
+    },
+    {
+      "id": 28,
+      "x": 874,
+      "y": 90,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 9
+    }
+  ],
+  "edges": [
+    {
+      "id": 1,
+      "fromId": 3,
+      "toId": 2
+    },
+    {
+      "id": 2,
+      "fromId": 2,
+      "toId": 4
+    },
+    {
+      "id": 3,
+      "fromId": 1,
+      "toId": 2
+    },
+    {
+      "id": 6,
+      "fromId": 6,
+      "toId": 3
+    },
+    {
+      "id": 7,
+      "fromId": 6,
+      "toId": 1
+    },
+    {
+      "id": 10,
+      "fromId": 8,
+      "toId": 11
+    },
+    {
+      "id": 11,
+      "fromId": 7,
+      "toId": 8
+    },
+    {
+      "id": 12,
+      "fromId": 12,
+      "toId": 8
+    },
+    {
+      "id": 20,
+      "fromId": 17,
+      "toId": 21
+    },
+    {
+      "id": 21,
+      "fromId": 20,
+      "toId": 17
+    },
+    {
+      "id": 23,
+      "fromId": 23,
+      "toId": 24
+    },
+    {
+      "id": 24,
+      "fromId": 24,
+      "toId": 23
+    },
+    {
+      "id": 25,
+      "fromId": 24,
+      "toId": 17
+    },
+    {
+      "id": 28,
+      "fromId": 21,
+      "toId": 25
+    },
+    {
+      "id": 29,
+      "fromId": 27,
+      "toId": 20
+    },
+    {
+      "id": 30,
+      "fromId": 28,
+      "toId": 23
+    },
+    {
+      "id": 31,
+      "fromId": 28,
+      "toId": 24
+    }
+  ]
+}

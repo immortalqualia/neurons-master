@@ -5,6 +5,11 @@
     "description": "A larger threshold counter patch with rows, carry lines, and a reset-like blue inhibit stage."
   },
   {
+    "name": "Logic",
+    "file": "logic.json",
+    "description": "Imported logic graph preset."
+  },
+  {
     "name": "1bit",
     "file": "1bit.json",
     "description": "A one-bit memory preset."
