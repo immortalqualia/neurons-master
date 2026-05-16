@@ -1,8 +1,8 @@
 {
   "version": 2,
   "preset": {
-    "name": "4bit Decoder",
-    "description": "Four 1bit memory cells feed a 16-way threshold decoder. Click bit inputs to store a 4-bit word, then read to activate exactly one decoded output."
+    "name": "4bit Decimal Display",
+    "description": "Four 1bit memory cells decode a 4-bit value into two decimal bar columns: tens on the left, ones on the right."
   },
   "nodes": [
     {
@@ -726,28 +726,12 @@
       "threshold": 4
     },
     {
-      "id": 600,
-      "x": 740,
-      "y": 165,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
       "id": 501,
       "x": 822,
       "y": 110,
       "polarity": 1,
       "frequency": 0,
       "threshold": 4
-    },
-    {
-      "id": 601,
-      "x": 822,
-      "y": 165,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
     },
     {
       "id": 502,
@@ -758,28 +742,12 @@
       "threshold": 4
     },
     {
-      "id": 602,
-      "x": 904,
-      "y": 165,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
       "id": 503,
       "x": 986,
       "y": 110,
       "polarity": 1,
       "frequency": 0,
       "threshold": 4
-    },
-    {
-      "id": 603,
-      "x": 986,
-      "y": 165,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
     },
     {
       "id": 504,
@@ -790,28 +758,12 @@
       "threshold": 4
     },
     {
-      "id": 604,
-      "x": 740,
-      "y": 295,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
       "id": 505,
       "x": 822,
       "y": 240,
       "polarity": 1,
       "frequency": 0,
       "threshold": 4
-    },
-    {
-      "id": 605,
-      "x": 822,
-      "y": 295,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
     },
     {
       "id": 506,
@@ -822,28 +774,12 @@
       "threshold": 4
     },
     {
-      "id": 606,
-      "x": 904,
-      "y": 295,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
       "id": 507,
       "x": 986,
       "y": 240,
       "polarity": 1,
       "frequency": 0,
       "threshold": 4
-    },
-    {
-      "id": 607,
-      "x": 986,
-      "y": 295,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
     },
     {
       "id": 508,
@@ -854,28 +790,12 @@
       "threshold": 4
     },
     {
-      "id": 608,
-      "x": 740,
-      "y": 425,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
       "id": 509,
       "x": 822,
       "y": 370,
       "polarity": 1,
       "frequency": 0,
       "threshold": 4
-    },
-    {
-      "id": 609,
-      "x": 822,
-      "y": 425,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
     },
     {
       "id": 510,
@@ -886,28 +806,12 @@
       "threshold": 4
     },
     {
-      "id": 610,
-      "x": 904,
-      "y": 425,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
       "id": 511,
       "x": 986,
       "y": 370,
       "polarity": 1,
       "frequency": 0,
       "threshold": 4
-    },
-    {
-      "id": 611,
-      "x": 986,
-      "y": 425,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
     },
     {
       "id": 512,
@@ -918,28 +822,12 @@
       "threshold": 4
     },
     {
-      "id": 612,
-      "x": 740,
-      "y": 555,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
       "id": 513,
       "x": 822,
       "y": 500,
       "polarity": 1,
       "frequency": 0,
       "threshold": 4
-    },
-    {
-      "id": 613,
-      "x": 822,
-      "y": 555,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
     },
     {
       "id": 514,
@@ -950,14 +838,6 @@
       "threshold": 4
     },
     {
-      "id": 614,
-      "x": 904,
-      "y": 555,
-      "polarity": 1,
-      "frequency": 0,
-      "threshold": 1
-    },
-    {
       "id": 515,
       "x": 986,
       "y": 500,
@@ -966,137 +846,145 @@
       "threshold": 4
     },
     {
-      "id": 615,
-      "x": 986,
-      "y": 555,
+      "id": 801,
+      "x": 900,
+      "y": 142,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 700,
-      "x": 740,
-      "y": 205,
+      "id": 821,
+      "x": 990,
+      "y": 142,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 701,
-      "x": 822,
-      "y": 205,
+      "id": 802,
+      "x": 900,
+      "y": 184,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 702,
-      "x": 904,
-      "y": 205,
+      "id": 822,
+      "x": 990,
+      "y": 184,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 703,
-      "x": 986,
-      "y": 205,
+      "id": 803,
+      "x": 900,
+      "y": 226,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 704,
-      "x": 740,
-      "y": 335,
+      "id": 823,
+      "x": 990,
+      "y": 226,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 705,
-      "x": 822,
-      "y": 335,
+      "id": 804,
+      "x": 900,
+      "y": 268,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 706,
-      "x": 904,
-      "y": 335,
+      "id": 824,
+      "x": 990,
+      "y": 268,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 707,
-      "x": 986,
-      "y": 335,
+      "id": 805,
+      "x": 900,
+      "y": 310,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 708,
-      "x": 740,
-      "y": 465,
+      "id": 825,
+      "x": 990,
+      "y": 310,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 709,
-      "x": 822,
-      "y": 465,
+      "id": 806,
+      "x": 900,
+      "y": 352,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 710,
-      "x": 904,
-      "y": 465,
+      "id": 826,
+      "x": 990,
+      "y": 352,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 711,
-      "x": 986,
-      "y": 465,
+      "id": 807,
+      "x": 900,
+      "y": 394,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 712,
-      "x": 740,
-      "y": 595,
+      "id": 827,
+      "x": 990,
+      "y": 394,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 713,
-      "x": 822,
-      "y": 595,
+      "id": 808,
+      "x": 900,
+      "y": 436,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 714,
-      "x": 904,
-      "y": 595,
+      "id": 828,
+      "x": 990,
+      "y": 436,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
     },
     {
-      "id": 715,
-      "x": 986,
-      "y": 595,
+      "id": 809,
+      "x": 900,
+      "y": 478,
+      "polarity": 1,
+      "frequency": 0,
+      "threshold": 1
+    },
+    {
+      "id": 829,
+      "x": 990,
+      "y": 478,
       "polarity": 1,
       "frequency": 0,
       "threshold": 1
@@ -1664,11 +1552,6 @@
       "toId": 431
     },
     {
-      "id": 113,
-      "fromId": 500,
-      "toId": 600
-    },
-    {
       "id": 114,
       "fromId": 133,
       "toId": 500
@@ -1687,11 +1570,6 @@
       "id": 117,
       "fromId": 433,
       "toId": 500
-    },
-    {
-      "id": 118,
-      "fromId": 501,
-      "toId": 601
     },
     {
       "id": 119,
@@ -1714,11 +1592,6 @@
       "toId": 501
     },
     {
-      "id": 123,
-      "fromId": 502,
-      "toId": 602
-    },
-    {
       "id": 124,
       "fromId": 133,
       "toId": 502
@@ -1737,11 +1610,6 @@
       "id": 127,
       "fromId": 433,
       "toId": 502
-    },
-    {
-      "id": 128,
-      "fromId": 503,
-      "toId": 603
     },
     {
       "id": 129,
@@ -1764,11 +1632,6 @@
       "toId": 503
     },
     {
-      "id": 133,
-      "fromId": 504,
-      "toId": 604
-    },
-    {
       "id": 134,
       "fromId": 133,
       "toId": 504
@@ -1787,11 +1650,6 @@
       "id": 137,
       "fromId": 433,
       "toId": 504
-    },
-    {
-      "id": 138,
-      "fromId": 505,
-      "toId": 605
     },
     {
       "id": 139,
@@ -1814,11 +1672,6 @@
       "toId": 505
     },
     {
-      "id": 143,
-      "fromId": 506,
-      "toId": 606
-    },
-    {
       "id": 144,
       "fromId": 133,
       "toId": 506
@@ -1837,11 +1690,6 @@
       "id": 147,
       "fromId": 433,
       "toId": 506
-    },
-    {
-      "id": 148,
-      "fromId": 507,
-      "toId": 607
     },
     {
       "id": 149,
@@ -1864,11 +1712,6 @@
       "toId": 507
     },
     {
-      "id": 153,
-      "fromId": 508,
-      "toId": 608
-    },
-    {
       "id": 154,
       "fromId": 133,
       "toId": 508
@@ -1887,11 +1730,6 @@
       "id": 157,
       "fromId": 432,
       "toId": 508
-    },
-    {
-      "id": 158,
-      "fromId": 509,
-      "toId": 609
     },
     {
       "id": 159,
@@ -1914,11 +1752,6 @@
       "toId": 509
     },
     {
-      "id": 163,
-      "fromId": 510,
-      "toId": 610
-    },
-    {
       "id": 164,
       "fromId": 133,
       "toId": 510
@@ -1937,11 +1770,6 @@
       "id": 167,
       "fromId": 432,
       "toId": 510
-    },
-    {
-      "id": 168,
-      "fromId": 511,
-      "toId": 611
     },
     {
       "id": 169,
@@ -1964,11 +1792,6 @@
       "toId": 511
     },
     {
-      "id": 173,
-      "fromId": 512,
-      "toId": 612
-    },
-    {
       "id": 174,
       "fromId": 133,
       "toId": 512
@@ -1987,11 +1810,6 @@
       "id": 177,
       "fromId": 432,
       "toId": 512
-    },
-    {
-      "id": 178,
-      "fromId": 513,
-      "toId": 613
     },
     {
       "id": 179,
@@ -2014,11 +1832,6 @@
       "toId": 513
     },
     {
-      "id": 183,
-      "fromId": 514,
-      "toId": 614
-    },
-    {
       "id": 184,
       "fromId": 133,
       "toId": 514
@@ -2037,11 +1850,6 @@
       "id": 187,
       "fromId": 432,
       "toId": 514
-    },
-    {
-      "id": 188,
-      "fromId": 515,
-      "toId": 615
     },
     {
       "id": 189,
@@ -2065,83 +1873,333 @@
     },
     {
       "id": 193,
-      "fromId": 600,
-      "toId": 700
+      "fromId": 501,
+      "toId": 821
     },
     {
       "id": 194,
-      "fromId": 601,
-      "toId": 701
+      "fromId": 502,
+      "toId": 821
     },
     {
       "id": 195,
-      "fromId": 602,
-      "toId": 702
+      "fromId": 502,
+      "toId": 822
     },
     {
       "id": 196,
-      "fromId": 603,
-      "toId": 703
+      "fromId": 503,
+      "toId": 821
     },
     {
       "id": 197,
-      "fromId": 604,
-      "toId": 704
+      "fromId": 503,
+      "toId": 822
     },
     {
       "id": 198,
-      "fromId": 605,
-      "toId": 705
+      "fromId": 503,
+      "toId": 823
     },
     {
       "id": 199,
-      "fromId": 606,
-      "toId": 706
+      "fromId": 504,
+      "toId": 821
     },
     {
       "id": 200,
-      "fromId": 607,
-      "toId": 707
+      "fromId": 504,
+      "toId": 822
     },
     {
       "id": 201,
-      "fromId": 608,
-      "toId": 708
+      "fromId": 504,
+      "toId": 823
     },
     {
       "id": 202,
-      "fromId": 609,
-      "toId": 709
+      "fromId": 504,
+      "toId": 824
     },
     {
       "id": 203,
-      "fromId": 610,
-      "toId": 710
+      "fromId": 505,
+      "toId": 821
     },
     {
       "id": 204,
-      "fromId": 611,
-      "toId": 711
+      "fromId": 505,
+      "toId": 822
     },
     {
       "id": 205,
-      "fromId": 612,
-      "toId": 712
+      "fromId": 505,
+      "toId": 823
     },
     {
       "id": 206,
-      "fromId": 613,
-      "toId": 713
+      "fromId": 505,
+      "toId": 824
     },
     {
       "id": 207,
-      "fromId": 614,
-      "toId": 714
+      "fromId": 505,
+      "toId": 825
     },
     {
       "id": 208,
-      "fromId": 615,
-      "toId": 715
+      "fromId": 506,
+      "toId": 821
+    },
+    {
+      "id": 209,
+      "fromId": 506,
+      "toId": 822
+    },
+    {
+      "id": 210,
+      "fromId": 506,
+      "toId": 823
+    },
+    {
+      "id": 211,
+      "fromId": 506,
+      "toId": 824
+    },
+    {
+      "id": 212,
+      "fromId": 506,
+      "toId": 825
+    },
+    {
+      "id": 213,
+      "fromId": 506,
+      "toId": 826
+    },
+    {
+      "id": 214,
+      "fromId": 507,
+      "toId": 821
+    },
+    {
+      "id": 215,
+      "fromId": 507,
+      "toId": 822
+    },
+    {
+      "id": 216,
+      "fromId": 507,
+      "toId": 823
+    },
+    {
+      "id": 217,
+      "fromId": 507,
+      "toId": 824
+    },
+    {
+      "id": 218,
+      "fromId": 507,
+      "toId": 825
+    },
+    {
+      "id": 219,
+      "fromId": 507,
+      "toId": 826
+    },
+    {
+      "id": 220,
+      "fromId": 507,
+      "toId": 827
+    },
+    {
+      "id": 221,
+      "fromId": 508,
+      "toId": 821
+    },
+    {
+      "id": 222,
+      "fromId": 508,
+      "toId": 822
+    },
+    {
+      "id": 223,
+      "fromId": 508,
+      "toId": 823
+    },
+    {
+      "id": 224,
+      "fromId": 508,
+      "toId": 824
+    },
+    {
+      "id": 225,
+      "fromId": 508,
+      "toId": 825
+    },
+    {
+      "id": 226,
+      "fromId": 508,
+      "toId": 826
+    },
+    {
+      "id": 227,
+      "fromId": 508,
+      "toId": 827
+    },
+    {
+      "id": 228,
+      "fromId": 508,
+      "toId": 828
+    },
+    {
+      "id": 229,
+      "fromId": 509,
+      "toId": 821
+    },
+    {
+      "id": 230,
+      "fromId": 509,
+      "toId": 822
+    },
+    {
+      "id": 231,
+      "fromId": 509,
+      "toId": 823
+    },
+    {
+      "id": 232,
+      "fromId": 509,
+      "toId": 824
+    },
+    {
+      "id": 233,
+      "fromId": 509,
+      "toId": 825
+    },
+    {
+      "id": 234,
+      "fromId": 509,
+      "toId": 826
+    },
+    {
+      "id": 235,
+      "fromId": 509,
+      "toId": 827
+    },
+    {
+      "id": 236,
+      "fromId": 509,
+      "toId": 828
+    },
+    {
+      "id": 237,
+      "fromId": 509,
+      "toId": 829
+    },
+    {
+      "id": 238,
+      "fromId": 510,
+      "toId": 801
+    },
+    {
+      "id": 239,
+      "fromId": 511,
+      "toId": 801
+    },
+    {
+      "id": 240,
+      "fromId": 511,
+      "toId": 821
+    },
+    {
+      "id": 241,
+      "fromId": 512,
+      "toId": 801
+    },
+    {
+      "id": 242,
+      "fromId": 512,
+      "toId": 821
+    },
+    {
+      "id": 243,
+      "fromId": 512,
+      "toId": 822
+    },
+    {
+      "id": 244,
+      "fromId": 513,
+      "toId": 801
+    },
+    {
+      "id": 245,
+      "fromId": 513,
+      "toId": 821
+    },
+    {
+      "id": 246,
+      "fromId": 513,
+      "toId": 822
+    },
+    {
+      "id": 247,
+      "fromId": 513,
+      "toId": 823
+    },
+    {
+      "id": 248,
+      "fromId": 514,
+      "toId": 801
+    },
+    {
+      "id": 249,
+      "fromId": 514,
+      "toId": 821
+    },
+    {
+      "id": 250,
+      "fromId": 514,
+      "toId": 822
+    },
+    {
+      "id": 251,
+      "fromId": 514,
+      "toId": 823
+    },
+    {
+      "id": 252,
+      "fromId": 514,
+      "toId": 824
+    },
+    {
+      "id": 253,
+      "fromId": 515,
+      "toId": 801
+    },
+    {
+      "id": 254,
+      "fromId": 515,
+      "toId": 821
+    },
+    {
+      "id": 255,
+      "fromId": 515,
+      "toId": 822
+    },
+    {
+      "id": 256,
+      "fromId": 515,
+      "toId": 823
+    },
+    {
+      "id": 257,
+      "fromId": 515,
+      "toId": 824
+    },
+    {
+      "id": 258,
+      "fromId": 515,
+      "toId": 825
     }
   ]
 }

@@ -15,9 +15,9 @@
     "description": "Three 1bit memory cells wired as a binary incrementer: each clock reads bit0, writes it, and ripples carry only when a bit was already 1."
   },
   {
-    "name": "4bit Decoder",
+    "name": "4bit Decimal Display",
     "file": "4bit-decoder.json",
-    "description": "Four 1bit memory cells feed a 16-way threshold decoder. Click bit inputs to store a 4-bit word, then read to activate exactly one decoded output."
+    "description": "Four 1bit memory cells decode a 4-bit value into two decimal bar columns: tens on the left, ones on the right."
   },
   {
     "name": "Star",
