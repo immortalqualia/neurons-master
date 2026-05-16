@@ -15,9 +15,19 @@
     "description": "Three 1bit memory cells wired as a binary incrementer: each clock reads bit0, writes it, and ripples carry only when a bit was already 1."
   },
   {
+    "name": "Star",
+    "file": "star.json",
+    "description": "Imported graph preset."
+  },
+  {
     "name": "Three Engines One Key",
     "file": "three-engines-one-key.json",
     "description": "One top-left trigger starts 3, 5, and 7 step loops with light blue braking."
+  },
+  {
+    "name": "Sound",
+    "file": "sound.json",
+    "description": "Imported graph preset."
   },
   {
     "name": "Prime Drift Manual",
@@ -25,9 +35,19 @@
     "description": "5, 7, and 8 step circuits tuned in separated registers, started from one key node."
   },
   {
+    "name": "Two Systems",
+    "file": "twoSystems.json",
+    "description": "Imported graph preset."
+  },
+  {
     "name": "Glass Ratchet Key",
     "file": "glass-ratchet-key.json",
     "description": "A compact 4/6/9 ratchet with high shimmer and explicit top-left entry."
+  },
+  {
+    "name": "Music 2",
+    "file": "music2.json",
+    "description": "Imported graph preset."
   },
   {
     "name": "Phase Gate Bloom",
@@ -35,9 +55,19 @@
     "description": "Two unequal loops only open a bright phrase when their phases meet; a blue pulse briefly shuts the gate after each bloom."
   },
   {
+    "name": "Mucic",
+    "file": "mucic.json",
+    "description": "Imported graph preset."
+  },
+  {
     "name": "Mirror Latch",
     "file": "mirror-latch.json",
     "description": "Two mirrored loops feed a threshold latch; blue feedback knocks one side out of phase instead of counting steps."
+  },
+  {
+    "name": "Song",
+    "file": "song.json",
+    "description": "Imported graph preset."
   },
   {
     "name": "Canon Switcher",
